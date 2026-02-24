@@ -5,6 +5,7 @@ import { UserProvider } from "@/context/UserContext";
 import { BannerProvider } from "@/context/BannerContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { UIProvider } from "@/context/UIContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import LayoutContent from "@/components/LayoutContent";
 import Providers from "@/components/Providers";
 
@@ -33,11 +34,13 @@ export default function RootLayout({ children }) {
           <LanguageProvider>
             <UIProvider>
               <UserProvider>
-                <BannerProvider>
-                  <CartProvider>
-                    <LayoutContent>{children}</LayoutContent>
-                  </CartProvider>
-                </BannerProvider>
+                <WishlistProvider>
+                  <BannerProvider>
+                    <CartProvider>
+                      <LayoutContent>{children}</LayoutContent>
+                    </CartProvider>
+                  </BannerProvider>
+                </WishlistProvider>
               </UserProvider>
             </UIProvider>
           </LanguageProvider>

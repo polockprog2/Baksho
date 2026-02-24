@@ -88,9 +88,9 @@ export default function AdminInventoryPage() {
                                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <p className="text-sm font-black text-slate-900">{item.name}</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase">{item.category} • {item.unit}</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase">{item.category?.name || item.category} • {item.unit}</p>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4">~
                                         <span className={`text-sm font-black ${item.stock < lowStockThreshold ? 'text-red-600' : 'text-slate-900'}`}>
                                             {item.stock || 0} units
                                         </span>

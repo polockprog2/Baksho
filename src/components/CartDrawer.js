@@ -78,14 +78,14 @@ export default function CartDrawer() {
                 className={`absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl transition-transform duration-500 ease-out border-l border-gray-100 flex flex-col ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 {/* Drawer Header */}
-                <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-[#F9F7F2]/50">
+                <div className="p-4 md:p-6 border-b border-gray-50 flex items-center justify-between bg-[#F9F7F2]/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#003B4A] rounded-2xl flex items-center justify-center text-white shadow-lg">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-[#003B4A] rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-lg">
+                            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                         </div>
-                        <h2 className="text-2xl font-black text-[#003B4A] tracking-tighter uppercase">{t.cart_summary}</h2>
+                        <h2 className="text-xl md:text-2xl font-black text-[#003B4A] tracking-tighter uppercase">{t.cart_summary}</h2>
                     </div>
                     <button
                         onClick={closeCart}
@@ -98,7 +98,7 @@ export default function CartDrawer() {
                 </div>
 
                 {/* Drawer Content (Scrollable List) */}
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
                     {cartItems.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center">
                             <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mb-6 animate-bounce">
@@ -169,7 +169,7 @@ export default function CartDrawer() {
 
                 {/* Drawer Footer (Summary & Checkout) */}
                 {cartItems.length > 0 && (
-                    <div className="p-6 bg-white border-t border-gray-100 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
+                    <div className="p-4 md:p-6 bg-white border-t border-gray-100 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
                         <div className="space-y-3 mb-6">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-400 font-medium">{t.cart_subtotal}</span>

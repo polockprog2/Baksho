@@ -1,12 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { initialBanners } from '@/data/banners';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const BannerContext = createContext();
 
 export function BannerProvider({ children }) {
-    const [banners, setBanners] = useState([]);
+    const [banners, setBanners] = useState(initialBanners);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load banners from API
@@ -15,7 +16,7 @@ export function BannerProvider({ children }) {
             setIsLoaded(true);
             return;
         }
-        
+
         const fetchBanners = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/banners`, {
@@ -45,7 +46,7 @@ export function BannerProvider({ children }) {
                 setIsLoaded(true);
             }
         };
-        
+
         fetchBanners();
     }, []);
 

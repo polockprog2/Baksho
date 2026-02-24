@@ -9,8 +9,7 @@ export const users = [
         id: 1,
         email: "demo@example.com",
         password: "password123", // In production, passwords would be hashed
-        firstName: "John",
-        lastName: "Doe",
+        name: "John Doe",
         phone: "+1 (555) 123-4567",
         addresses: [
             {
@@ -63,7 +62,8 @@ export const authenticateUser = (email, password) => {
     const user = users.find(u => u.email === email && u.password === password);
     if (user) {
         // Return user without password
-        const { password, ...userWithoutPassword } = user;
+        const userWithoutPassword = { ...user };
+        delete userWithoutPassword.password;
         return userWithoutPassword;
     }
     return null;
@@ -79,6 +79,7 @@ export const registerUser = (userData) => {
         createdAt: new Date().toISOString().split('T')[0]
     };
     users.push(newUser);
-    const { password, ...userWithoutPassword } = newUser;
+    const userWithoutPassword = { ...newUser };
+    delete userWithoutPassword.password;
     return userWithoutPassword;
 };

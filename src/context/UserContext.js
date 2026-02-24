@@ -1,7 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authenticateUser, registerUser } from '@/data/users';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import {
+    updateUserProfileApi,
+    addAddressApi,
+    updateAddressApi,
+    deleteAddressApi
+} from '@/api/user.api';
 
 // Create User Context
 const UserContext = createContext();
@@ -17,112 +23,127 @@ export const useUser = () => {
 
 // User Provider Component
 export const UserProvider = ({ children }) => {
+    const { data: session, status } = useSession();
     const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const isLoading = status === 'loading';
 
-    // Load user from localStorage on mount
+    // Synchronize local user state with NextAuth session
     useEffect(() => {
-        if (typeof window === 'undefined') {
-            setIsLoading(false);
-            return;
+        if (session?.user) {
+            setUser(session.user);
+        } else if (status === 'unauthenticated') {
+            setUser(null);
         }
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-            try {
-                setUser(JSON.parse(savedUser));
-            } catch (error) {
-                console.error('Error loading user from localStorage:', error);
-            }
-        }
-        setIsLoading(false);
-    }, []);
+    }, [session, status]);
 
-    // Save user to localStorage whenever it changes
-    useEffect(() => {
-        if (!isLoading && typeof window !== 'undefined') {
-            if (user) {
-                localStorage.setItem('user', JSON.stringify(user));
-            } else {
-                localStorage.removeItem('user');
-            }
-        }
-    }, [user, isLoading]);
-
-    // Login function
-    // In production, this would call: POST /api/auth/login
+    // Login function using NextAuth
     const login = async (email, password) => {
         try {
-            const authenticatedUser = authenticateUser(email, password);
-            if (authenticatedUser) {
-                setUser(authenticatedUser);
-                return { success: true, user: authenticatedUser };
-            } else {
-                return { success: false, error: 'Invalid email or password' };
+            const result = await signIn('credentials', {
+                redirect: false,
+                email,
+                password,
+            });
+
+            if (result.error) {
+                return { success: false, error: result.error };
             }
+            return { success: true };
         } catch (error) {
+            console.error('Login error:', error);
             return { success: false, error: 'Login failed. Please try again.' };
         }
     };
 
-    // Register function
-    // In production, this would call: POST /api/auth/register
+    // Register function via custom API, then sign in with NextAuth
     const register = async (userData) => {
         try {
-            const newUser = registerUser(userData);
-            setUser(newUser);
-            return { success: true, user: newUser };
+            // Import registerUserApi dynamically or keep it in context if needed
+            // For now, we'll keep it simple: register via API, then signIn
+            const registerUserApi = (await import('@/api/user.api')).registerUserApi;
+            const response = await registerUserApi(userData);
+
+            if (response.success || response.user) {
+                // Automatically log in after registration
+                return await login(userData.email, userData.password);
+            }
+            return { success: false, error: 'Registration succeeded but login failed.' };
         } catch (error) {
-            return { success: false, error: 'Registration failed. Please try again.' };
+            console.error('Registration error:', error);
+            return { success: false, error: error.message || 'Registration failed.' };
         }
     };
 
-    // Logout function
-    // In production, this would call: POST /api/auth/logout
+    // Logout function using NextAuth
     const logout = () => {
+        signOut({ redirect: false });
         setUser(null);
-        localStorage.removeItem('user');
     };
 
     // Update user profile
-    // In production, this would call: PATCH /api/users/{userId}
-    const updateProfile = (updatedData) => {
-        setUser(prevUser => ({
-            ...prevUser,
-            ...updatedData
-        }));
+    const updateProfile = async (updatedData) => {
+        if (!user?.id) return { success: false, error: 'User not logged in' };
+        try {
+            const updatedUser = await updateUserProfileApi(user.id, updatedData);
+            setUser(prevUser => ({
+                ...prevUser,
+                ...updatedUser
+            }));
+            return { success: true, user: updatedUser };
+        } catch (error) {
+            console.error('Update profile error:', error);
+            return { success: false, error: error.message || 'Update failed' };
+        }
     };
 
     // Add address
-    // In production, this would call: POST /api/users/{userId}/addresses
-    const addAddress = (address) => {
-        const newAddress = {
-            id: user.addresses.length + 1,
-            ...address
-        };
-        setUser(prevUser => ({
-            ...prevUser,
-            addresses: [...prevUser.addresses, newAddress]
-        }));
+    const addAddress = async (address) => {
+        if (!user?.id) return { success: false, error: 'User not logged in' };
+        try {
+            const newAddress = await addAddressApi(user.id, address);
+            setUser(prevUser => ({
+                ...prevUser,
+                addresses: [...(prevUser.addresses || []), newAddress]
+            }));
+            return { success: true, address: newAddress };
+        } catch (error) {
+            console.error('Add address error:', error);
+            return { success: false, error: error.message || 'Failed to add address' };
+        }
     };
 
     // Update address
-    // In production, this would call: PATCH /api/users/{userId}/addresses/{addressId}
-    const updateAddress = (addressId, updatedAddress) => {
-        setUser(prevUser => ({
-            ...prevUser,
-            addresses: prevUser.addresses.map(addr =>
-                addr.id === addressId ? { ...addr, ...updatedAddress } : addr
-            )
-        }));
+    const updateAddress = async (addressId, updatedAddress) => {
+        if (!user?.id) return { success: false, error: 'User not logged in' };
+        try {
+            const result = await updateAddressApi(user.id, addressId, updatedAddress);
+            setUser(prevUser => ({
+                ...prevUser,
+                addresses: prevUser.addresses.map(addr =>
+                    addr.id === addressId ? { ...addr, ...result } : addr
+                )
+            }));
+            return { success: true, address: result };
+        } catch (error) {
+            console.error('Update address error:', error);
+            return { success: false, error: error.message || 'Failed to update address' };
+        }
     };
 
     // Delete address
-    // In production, this would call: DELETE /api/users/{userId}/addresses/{addressId}
-    const deleteAddress = (addressId) => {
-        setUser(prevUser => ({
-            ...prevUser,
-            addresses: prevUser.addresses.filter(addr => addr.id !== addressId)
-        }));
+    const deleteAddress = async (addressId) => {
+        if (!user?.id) return { success: false, error: 'User not logged in' };
+        try {
+            await deleteAddressApi(user.id, addressId);
+            setUser(prevUser => ({
+                ...prevUser,
+                addresses: prevUser.addresses.filter(addr => addr.id !== addressId)
+            }));
+            return { success: true };
+        } catch (error) {
+            console.error('Delete address error:', error);
+            return { success: false, error: error.message || 'Failed to delete address' };
+        }
     };
 
     // Check if user is authenticated
@@ -132,7 +153,7 @@ export const UserProvider = ({ children }) => {
 
     // Check if user is admin
     const isAdmin = () => {
-        return user?.isAdmin === true;
+        return user?.role === 'ADMIN' || user?.isAdmin === true;
     };
 
     const value = {

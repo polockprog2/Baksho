@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
+import { useWishlist } from '@/context/WishlistContext';
 import SearchBar from './SearchBar';
 import { useLanguage } from '@/context/LanguageContext';
 import { useUI } from '@/context/UIContext';
@@ -17,8 +18,9 @@ export default function Navbar() {
     const { language, changeLanguage } = useLanguage();
     const t = translations[language] || translations.EN;
     const { getCartCount, toggleCart } = useCart();
-    const { user, logout } = useUser();
-    const { openSearch } = useUI(); // Added openSearch from useUI
+    const { user, logout, isAdmin } = useUser();
+    const { getWishlistCount } = useWishlist();
+    // const { openSearch } = useUI(); // Removed unused openSearch
 
     const categories = [
         {
@@ -166,10 +168,15 @@ export default function Navbar() {
                         </div>
 
                         {/* Wishlist - Hide on extra small */}
-                        <Link href="/wishlist" className="p-1 hover:opacity-70 transition-opacity hidden sm:block">
+                        <Link href="/wishlist" className="relative p-1 hover:opacity-70 transition-opacity hidden sm:block" aria-label="Wishlist">
                             <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
+                            {getWishlistCount() > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black h-4 w-4 flex items-center justify-center rounded-full border border-white">
+                                    {getWishlistCount()}
+                                </span>
+                            )}
                         </Link>
 
                         {/* Profile - Hide text on mobile */}
@@ -201,10 +208,10 @@ export default function Navbar() {
                         {user ? (
                             <div className="relative group">
                                 <button className="flex items-center gap-2 p-2 hover:bg-green-50 rounded-lg transition-colors">
-                                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        {user.firstName[0]}
+                                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-xs uppercase">
+                                        {user.name ? user.name[0] : 'U'}
                                     </div>
-                                    <span className="hidden lg:block font-medium text-gray-700">{user.firstName}</span>
+                                    <span className="hidden lg:block font-medium text-gray-700">{user.name || 'User'}</span>
                                 </button>
 
                                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
@@ -214,7 +221,7 @@ export default function Navbar() {
                                     <Link href="/profile#orders" className="block px-4 py-2 hover:bg-green-50 transition-colors text-gray-700">
                                         My Orders
                                     </Link>
-                                    {user.isAdmin && (
+                                    {isAdmin() && (
                                         <Link href="/admin" className="block px-4 py-2 hover:bg-green-50 transition-colors text-green-600 font-medium">
                                             Admin Dashboard
                                         </Link>
@@ -244,9 +251,11 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Mobile Search Bar */}
-                <div className="md:hidden px-4 pt-3">
-                    <SearchBar />
+                {/* Mobile Search Bar - Enhanced Layout */}
+                <div className="md:hidden px-4 pb-4 pt-1">
+                    <div className="bg-[#F9F7F2] p-2 rounded-2xl shadow-inner border border-gray-50">
+                        <SearchBar />
+                    </div>
                 </div>
             </div>
 
@@ -315,10 +324,11 @@ export default function Navbar() {
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Sidebar Header */}
-                        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#F9F7F2]">
-                            <div className="logo-animated scale-75 origin-left">
+                        <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-[#F9F7F2]">
+                            <div className="logo-animated scale-[0.65] origin-left">
                                 <span>📦Baksho®</span>
                                 <span>📦Baksho®</span>
+                                <span>Find Your Need®</span>
                             </div>
                             <button onClick={() => setIsMobileMenuOpen(false)} className="w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-sm text-gray-400 hover:text-red-500 transition-colors">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

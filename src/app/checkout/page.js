@@ -17,8 +17,8 @@ export default function CheckoutPage() {
     const t = translations[language] || translations.EN;
 
     const [formData, setFormData] = useState({
-        firstName: user?.firstName || '',
-        lastName: user?.lastName || '',
+        firstName: user?.name ? user.name.split(' ')[0] : '',
+        lastName: user?.name ? user.name.split(' ').slice(1).join(' ') : '',
         email: user?.email || '',
         phone: user?.phone || '',
         street: user?.addresses?.[0]?.street || '',

@@ -23,10 +23,14 @@ export default function AdminUsersPage() {
         fetchUsers();
     }, []);
 
-    const filteredUsers = userList.filter(u =>
-        u.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredUsers = userList.filter(u => {
+        const fullName = u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim();
+        const email = u.email || '';
+        const search = searchQuery.toLowerCase();
+
+        return fullName.toLowerCase().includes(search) ||
+            email.toLowerCase().includes(search);
+    });
 
     return (
         <div className="space-y-6">
@@ -71,10 +75,12 @@ export default function AdminUsersPage() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-[#F9F7F2] rounded-full flex items-center justify-center text-sm font-black text-[#003B4A]">
-                                                {u.firstName[0]}
+                                                {u.name ? u.name[0] : 'U'}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-slate-900">{u.firstName} {u.lastName}</p>
+                                                <p className="text-sm font-black text-slate-900">
+                                                    {u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'No Name'}
+                                                </p>
                                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: {u.id}</p>
                                             </div>
                                         </div>

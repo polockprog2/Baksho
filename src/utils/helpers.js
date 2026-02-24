@@ -60,7 +60,10 @@ export const filterByCategory = (products, category) => {
     if (!category || category === 'all') {
         return products;
     }
-    return products.filter(product => product.category === category);
+    return products.filter(product => {
+        const productCategory = typeof product.category === 'object' ? product.category.slug : product.category;
+        return productCategory === category;
+    });
 };
 
 // Search products
@@ -68,11 +71,14 @@ export const searchProductsUtil = (products, query) => {
     if (!query) return products;
 
     const lowerQuery = query.toLowerCase();
-    return products.filter(product =>
-        product.name.toLowerCase().includes(lowerQuery) ||
-        product.description.toLowerCase().includes(lowerQuery) ||
-        product.category.toLowerCase().includes(lowerQuery)
-    );
+    return products.filter(product => {
+        const categoryName = typeof product.category === 'object' ? product.category.name : product.category;
+        return (
+            product.name.toLowerCase().includes(lowerQuery) ||
+            product.description.toLowerCase().includes(lowerQuery) ||
+            categoryName.toLowerCase().includes(lowerQuery)
+        );
+    });
 };
 
 // Generate star rating

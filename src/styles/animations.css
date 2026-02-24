@@ -171,6 +171,24 @@
     animation: glow 2s ease-in-out infinite;
 }
 
+@keyframes colorShift {
+    0% {
+        color: #003B4A;
+    }
+
+    50% {
+        color: #10b981;
+    }
+
+    100% {
+        color: #003B4A;
+    }
+}
+
+.animate-color-shift {
+    animation: colorShift 5s ease-in-out infinite;
+}
+
 @keyframes scroll-mobile {
     0% {
         transform: translateX(0);

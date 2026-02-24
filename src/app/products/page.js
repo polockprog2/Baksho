@@ -7,7 +7,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { sortProducts, filterByCategory, searchProductsUtil } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
-import { getProducts } from '@/api/product.api';
+import { getProducts, getCategories } from '@/api/product.api';
 
 export default function ProductsPage() {
     return (
@@ -23,7 +23,6 @@ function ProductsContent() {
     const searchParams = useSearchParams();
     const { language } = useLanguage();
     const t = translations[language] || translations.EN;
-
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [sortBy, setSortBy] = useState('newest');
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -35,24 +34,37 @@ function ProductsContent() {
     const [minRating, setMinRating] = useState(0);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [allProducts, setAllProducts] = useState([]); // Store all fetched products
+    const [categories, setCategories] = useState([]); // Store fetched categories
     const [error, setError] = useState(null);
 
     // Fetch products from API
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchData = async () => {
             setIsLoading(true);
             try {
-                const response = await getProducts({ limit: 1000 });
-                setAllProducts(response.data || response);
+                const [productsRes, categoriesRes] = await Promise.all([
+                    getProducts({ limit: 1000 }),
+                    getCategories()
+                ]);
+
+                setAllProducts(productsRes.data || productsRes);
+
+                const fetchedCategories = categoriesRes.data || categoriesRes;
+                setCategories([
+                    { name: t.all_products, slug: 'all' },
+                    ...fetchedCategories
+                ]);
+
                 setError(null);
             } catch (err) {
-                console.error('Failed to fetch products:', err);
-                setError('Failed to load products');
-                setAllProducts([]);
+                console.error('Failed to fetch data:', err);
+                setError('Failed to load data');
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchProducts();
+        fetchData();
     }, []);
 
     useEffect(() => {
@@ -82,22 +94,23 @@ function ProductsContent() {
         setFilteredProducts(result);
     }, [allProducts, selectedCategory, searchQuery, sortBy, priceRange, inStockOnly, minRating]);
 
-    const categories = [
-        { name: t.all_products, slug: 'all' },
-        { name: t.cat_fruits_veg, slug: 'vegetables' },
-        { name: t.cat_fresh_frozen, slug: 'meat-fish' },
-        { name: t.cat_staples, slug: 'dairy' },
-        { name: t.cat_essentials, slug: 'packaged-food' },
-        { name: t.cat_home_new, slug: 'household' }
-    ];
+    // Categories are now fetched from API
 
     const getCategoryCount = (slug) => {
         if (slug === 'all') return allProducts.length;
-        return allProducts.filter(p => p.category === slug).length;
+        return allProducts.filter(p => {
+            const productCategory = typeof p.category === 'object' ? p.category.slug : p.category;
+            return productCategory === slug;
+        }).length;
     };
 
     const getStats = () => {
-        const products = selectedCategory === 'all' ? allProducts : allProducts.filter(p => p.category === selectedCategory);
+        const products = selectedCategory === 'all'
+            ? allProducts
+            : allProducts.filter(p => {
+                const productCategory = typeof p.category === 'object' ? p.category.slug : p.category;
+                return productCategory === selectedCategory;
+            });
         if (products.length === 0) return { min: 0, max: 0, avg: 0, inStock: 0, avgRating: 0 };
         const prices = products.map(p => p.price);
         return {
@@ -131,7 +144,7 @@ function ProductsContent() {
 
     return (
         <div className="bg-gradient-to-b from-white to-gray-50 min-h-screen">
-            
+
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Active Filters Display */}

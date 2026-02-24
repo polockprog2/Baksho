@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { getProducts, updateProduct, deleteProduct, createProduct } from '@/api/product.api';
 import { formatPrice } from '@/utils/helpers';
 
@@ -9,6 +10,7 @@ import { formatPrice } from '@/utils/helpers';
  * Features: API Integration, Pagination, Sorting, Search, Selection
  */
 export default function AdminProductsPage() {
+    const searchParams = useSearchParams();
     const [products, setProducts] = useState([]);
     const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
     const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +26,8 @@ export default function AdminProductsPage() {
         price: '',
         discount: 0,
         inStock: true,
-        unit: '1 kg'
+        unit: '1 kg',
+        stock: 100
     });
 
     const fetchProducts = useCallback(async (page = 1) => {
@@ -35,16 +38,24 @@ export default function AdminProductsPage() {
                 limit: 10,
                 search: searchQuery,
                 category: filters.category,
-                sort: filters.sort
+                sort: filters.sort,
+                // If stock filter is needed on API level, it should be added here
             });
-            setProducts(response.data);
+            let data = response.data;
+
+            // Client-side stock filtering if backend doesn't support it yet
+            if (searchParams.get('stock') === 'low') {
+                data = data.filter(p => !p.inStock || (p.stock && p.stock < 10));
+            }
+
+            setProducts(data);
             setMeta(response.meta);
         } catch (error) {
             console.error('Failed to fetch products:', error);
         } finally {
             setIsLoading(false);
         }
-    }, [searchQuery, filters]);
+    }, [searchQuery, filters, searchParams]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -52,6 +63,13 @@ export default function AdminProductsPage() {
         }, 300);
         return () => clearTimeout(timer);
     }, [fetchProducts]);
+
+    // Handle deep links (add=true)
+    useEffect(() => {
+        if (searchParams.get('add') === 'true') {
+            openCreateModal();
+        }
+    }, [searchParams]);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -82,7 +100,7 @@ export default function AdminProductsPage() {
         setEditingProduct(product);
         setFormData({
             name: product.name,
-            category: product.category,
+            category: product.category?.slug || product.category,
             price: product.price,
             discount: product.discount || 0,
             inStock: product.inStock,
@@ -192,7 +210,7 @@ export default function AdminProductsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-lg tracking-wider">
-                                                {product.category}
+                                                {product.category?.name || product.category}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">

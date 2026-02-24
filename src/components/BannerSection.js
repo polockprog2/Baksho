@@ -65,21 +65,27 @@ export default function BannerSection() {
 
                                     {/* Content Overlay */}
                                     <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-center max-w-2xl">
-                                        <div className="mb-4 translate-x-0 opacity-100 transition-all duration-1000 delay-300">
-                                            <span className="inline-block px-4 py-1.5 bg-green-500 text-white text-xs font-black uppercase tracking-[0.2em] rounded-full shadow-xl">
+                                        <div className="mb-4">
+                                            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-600/90 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-white/20">
+                                                <span className="relative flex h-2 w-2">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                                </span>
                                                 {banner.type === 'weekly-sale' ? 'Weekly Sale' : 'Featured Ad'}
                                             </span>
                                         </div>
-                                        <h2 className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight drop-shadow-2xl">
+                                        <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tighter drop-shadow-2xl">
                                             {banner.title}
                                         </h2>
-                                        <p className="text-lg md:text-xl text-gray-200 font-medium drop-shadow-lg mb-8 line-clamp-2 md:line-clamp-none">
+                                        <p className="text-lg md:text-2xl text-gray-100 font-semibold mb-10 line-clamp-2 md:line-clamp-none drop-shadow-lg leading-relaxed">
                                             {banner.subtitle}
                                         </p>
 
                                         <div className="flex items-center">
-                                            <span className="bg-white text-[#003B4A] px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl hover:bg-green-500 hover:text-white transition-all duration-300 transform hover:scale-110 active:scale-95">
-                                                Shop Now
+                                            <span className="group/btn relative px-10 py-4 bg-white text-[#003B4A] rounded-full font-black text-sm uppercase tracking-widest shadow-2xl hover:shadow-white/20 transition-all duration-500 hover:scale-110 active:scale-95 overflow-hidden">
+                                                <span className="relative z-10">Shop Now</span>
+                                                <div className="absolute inset-0 bg-green-500 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500"></div>
+                                                <span className="absolute inset-0 flex items-center justify-center text-white opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500 z-20 font-black">Shop Now</span>
                                             </span>
                                         </div>
                                     </div>

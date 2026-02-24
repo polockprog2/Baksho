@@ -24,13 +24,13 @@ export default function Footer() {
 
     return (
         <footer className="bg-gray-900 text-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <span className="text-3xl">📦</span>
-                            <span className="text-2xl font-bold text-green-400">Baksho®</span>
+                            <span className="text-2xl md:text-3xl">📦</span>
+                            <span className="text-xl md:text-2xl font-bold text-green-400">Baksho®</span>
                         </div>
                         <p className="text-gray-400 mb-4 text-sm leading-relaxed">
                             {t.footer_desc}

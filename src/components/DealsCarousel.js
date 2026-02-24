@@ -40,8 +40,17 @@ export default function DealsCarousel({ title, products, badgeType = 'sale', isL
         <section className="py-8 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+                <div className="flex items-center justify-between mb-8 group">
+                    <div className="flex items-center gap-3">
+                        {title && (
+                            <>
+                                <div className="w-1.5 h-8 bg-green-600 rounded-full"></div>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight uppercase">
+                                    {title}
+                                </h2>
+                            </>
+                        )}
+                    </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => scroll('left')}

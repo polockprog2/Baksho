@@ -56,7 +56,22 @@ html {
   line-height: 1;
   height: 40px;
   width: 180px;
-  /* Adjust based on logo length */
+}
+
+@media (max-width: 768px) {
+  .logo-animated {
+    font-size: 1.5rem;
+    height: 30px;
+    width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-animated {
+    font-size: 1.25rem;
+    height: 25px;
+    width: 120px;
+  }
 }
 
 .logo-animated span:nth-child(1) {

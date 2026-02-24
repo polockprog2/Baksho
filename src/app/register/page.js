@@ -77,8 +77,7 @@ export default function RegisterPage() {
         setIsLoading(true);
 
         const result = await register({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
+            name: `${formData.firstName} ${formData.lastName}`.trim(),
             email: formData.email,
             phone: formData.phone,
             password: formData.password

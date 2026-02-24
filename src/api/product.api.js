@@ -10,6 +10,8 @@ export const getProducts = async (params = {}) => {
     if (params.limit) queryParams.append('limit', params.limit);
     if (params.search) queryParams.append('search', params.search);
     if (params.category) queryParams.append('category', params.category);
+    if (params.featured) queryParams.append('featured', params.featured);
+    if (params.discount) queryParams.append('discount', params.discount);
     if (params.sort) queryParams.append('sort', params.sort);
 
     const url = `${API_BASE_URL}/products${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
@@ -37,6 +39,16 @@ export const createProduct = async (productData) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+};
+
+export const getCategories = async () => {
+    const response = await fetch(`${API_BASE_URL}/categories`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

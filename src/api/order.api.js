@@ -15,7 +15,8 @@ export const getOrders = async (params = {}) => {
     const url = `${API_BASE_URL}/orders${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
     const response = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -25,7 +26,8 @@ export const getOrders = async (params = {}) => {
 export const getOrderById = async (id) => {
     const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,7 +38,8 @@ export const createOrder = async (orderData) => {
     const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderData),
+        credentials: 'include'
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,7 +50,8 @@ export const updateOrderStatus = async (id, status) => {
     const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ status }),
+        credentials: 'include'
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
