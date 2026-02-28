@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "../styles/animations.css";
+
+@theme {
+  /* Brand Colors - Jamoona Style */
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
+  --color-secondary: #6b7280;
+  --color-accent: #f59e0b;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #3b82f6;
+
+  /* Additional Theme Colors */
+  --color-sale-red: #ef4444;
+  --color-value-amber: #f59e0b;
+  --color-text: #1f2937;
+  --color-text-light: #6b7280;
+  --color-border: #e5e7eb;
+  --color-background: #ffffff;
+  --color-background-gray: #f9fafb;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scoped Logo Animation */
+.logo-animated {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: consolas, monospace;
+  font-size: 2.25rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: transparent;
+  cursor: pointer;
+  line-height: 1;
+  height: 40px;
+  width: 180px;
+}
+
+@media (max-width: 768px) {
+  .logo-animated {
+    font-size: 1.5rem;
+    height: 30px;
+    width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-animated {
+    font-size: 1.25rem;
+    height: 25px;
+    width: 120px;
+  }
+}
+
+.logo-animated span:nth-child(1) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #003B4A;
+  transition: 0.5s;
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logo-animated:hover span:nth-child(1) {
+  transform: translateY(-8px);
+}
+
+.logo-animated span:nth-child(2) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #003B4A;
+  transition: 0.5s;
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.logo-animated:hover span:nth-child(2) {
+  transform: translateY(8px);
+}
+
+.logo-animated span:nth-child(3) {
+  position: absolute;
+  top: 49%;
+  left: 5;
+  transform: translateY(-50%) scaleY(0);
+  width: 100%;
+  color: #003B4A;
+  background: #ff0;
+  font-size: 0.25em;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-align: center;
+  transition: 0.5s;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+
+.logo-animated:hover span:nth-child(3) {
+  transform: translateY(-50%) scaleY(1);
+}
