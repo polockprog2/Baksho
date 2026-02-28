@@ -129,3 +129,17 @@ export const restockLowItems = async () => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
 };
+export const bulkUploadProducts = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/products/bulk`, {
+        method: 'POST',
+        // Note: Do not set Content-Type header when sending FormData, 
+        // the browser will set it automatically with the correct boundary.
+        body: formData
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+};

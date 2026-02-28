@@ -1,0 +1,6 @@
+name,slug,description,categorySlug,variantName,price,originalPrice,stock,sku,imageUrls
+Fresh Broccoli,fresh-broccoli,High quality fresh broccoli,vegetables,1 kg,2.5,3.0,100,BROC-001,https://images.unsplash.com/photo-1584270354949-c26b0d5b4a0c?auto=format&fit=crop&q=80&w=600
+Red Apples,red-apples,Sweet and crunchy red apples,fruits,500g,1.5,1.8,200,APP-RED-01,https://images.unsplash.com/photo-1560806887-1e4cd0b6bccb?auto=format&fit=crop&q=80&w=600
+Chicken Breast,chicken-breast,Organic chicken breast,meat-fish,1 kg,8.99,10.5,50,CHICK-B01,https://images.unsplash.com/photo-1604503468506-a8da13d82791?auto=format&fit=crop&q=80&w=600
+Fresh Milk,fresh-milk,Full cream fresh milk,dairy,1 L,1.2,1.5,150,MILK-001,https://images.unsplash.com/photo-1563636619-e910f01859ec?auto=format&fit=crop&q=80&w=600
+Organic Spinach,organic-spinach,Fresh organic spinach leaves,vegetables,250g,0.99,1.2,80,SPIN-01,https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=600

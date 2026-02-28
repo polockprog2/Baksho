@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getProducts, updateProduct, deleteProduct, createProduct } from '@/api/product.api';
+import { getProducts, updateProduct, deleteProduct, createProduct, bulkUploadProducts } from '@/api/product.api';
+import { toast } from 'react-hot-toast';
 import { formatPrice } from '@/utils/helpers';
 
 /**
@@ -19,6 +20,9 @@ export default function AdminProductsPage() {
 
     // UI States
     const [showModal, setShowModal] = useState(false);
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadResults, setUploadResults] = useState(null);
     const [editingProduct, setEditingProduct] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
@@ -130,13 +134,22 @@ export default function AdminProductsPage() {
                     <h1 className="text-2xl font-black text-slate-900">Product Management</h1>
                     <p className="text-slate-500 text-sm font-medium mt-1">Total of {meta.total} products in your catalog</p>
                 </div>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#003B4A] rounded-xl text-sm font-bold text-white hover:bg-[#002B36] transition-all shadow-md active:scale-95"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                    Add New Product
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowBulkModal(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-[#003B4A] rounded-xl text-sm font-bold text-[#003B4A] hover:bg-[#003B4A]/5 transition-all shadow-sm active:scale-95"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        Bulk Upload
+                    </button>
+                    <button
+                        onClick={openCreateModal}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#003B4A] rounded-xl text-sm font-bold text-white hover:bg-[#002B36] transition-all shadow-md active:scale-95"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                        Add New Product
+                    </button>
+                </div>
             </div>
 
             {/* Filter Bar */}
@@ -362,6 +375,92 @@ export default function AdminProductsPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Upload Modal */}
+            {showBulkModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[151] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                            <h2 className="text-xl font-black text-slate-900">Bulk Product Upload</h2>
+                            <button onClick={() => { setShowBulkModal(false); setUploadResults(null); }} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            {!uploadResults ? (
+                                <>
+                                    <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                                        <h3 className="text-xs font-black text-blue-700 uppercase tracking-wider mb-2">CSV Format Requirements</h3>
+                                        <p className="text-[11px] text-blue-600 font-medium leading-relaxed">
+                                            The CSV should have the following headers:<br />
+                                            <code className="bg-blue-100 px-1 rounded">name,slug,description,categorySlug,variantName,price,originalPrice,stock,sku,imageUrls</code>
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 hover:border-[#003B4A] transition-colors bg-slate-50/50">
+                                        <svg className="w-12 h-12 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                                        <p className="text-sm font-bold text-slate-600 mb-4 text-center">Drag and drop your CSV file here or click to browse</p>
+                                        <input
+                                            type="file"
+                                            accept=".csv"
+                                            className="hidden"
+                                            id="bulk-file-upload"
+                                            disabled={isUploading}
+                                            onChange={async (e) => {
+                                                const file = e.target.files[0];
+                                                if (!file) return;
+                                                setIsUploading(true);
+                                                try {
+                                                    const res = await bulkUploadProducts(file);
+                                                    setUploadResults(res);
+                                                    fetchProducts(1);
+                                                    toast.success('Upload completed!');
+                                                } catch (error) {
+                                                    toast.error('Upload failed: ' + error.message);
+                                                } finally {
+                                                    setIsUploading(false);
+                                                }
+                                            }}
+                                        />
+                                        <label
+                                            htmlFor="bulk-file-upload"
+                                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer shadow-sm active:scale-95 ${isUploading ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#003B4A] text-white hover:bg-[#002B36]'}`}
+                                        >
+                                            {isUploading ? 'Processing File...' : 'Select CSV File'}
+                                        </label>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-green-50 border border-green-100 rounded-2xl text-center">
+                                            <p className="text-2xl font-black text-green-700">{uploadResults.success}</p>
+                                            <p className="text-xs font-bold text-green-600 uppercase">Success</p>
+                                        </div>
+                                        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-center">
+                                            <p className="text-2xl font-black text-red-700">{uploadResults.failed}</p>
+                                            <p className="text-xs font-bold text-red-600 uppercase">Failed</p>
+                                        </div>
+                                    </div>
+                                    {uploadResults.errors.length > 0 && (
+                                        <div className="max-h-40 overflow-y-auto p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Errors Details</h4>
+                                            <ul className="space-y-1">
+                                                {uploadResults.errors.map((err, idx) => (
+                                                    <li key={idx} className="text-[11px] text-red-600 font-medium">#{idx + 1}: {err}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => { setShowBulkModal(false); setUploadResults(null); }}
+                                        className="w-full py-3 bg-[#003B4A] text-white rounded-xl text-sm font-black hover:bg-[#002B36] transition-all shadow-lg active:scale-95"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
