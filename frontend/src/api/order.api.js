@@ -1,5 +1,4 @@
-// order.api.js
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import apiClient from './apiClient';
 
 /**
  * Service to handle order API calls
@@ -12,48 +11,25 @@ export const getOrders = async (params = {}) => {
     if (params.search) queryParams.append('search', params.search);
     if (params.userId) queryParams.append('userId', params.userId);
 
-    const url = `${API_BASE_URL}/orders${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    const queryString = queryParams.toString();
+    return await apiClient(`orders${queryString ? '?' + queryString : ''}`);
 };
 
 export const getOrderById = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    return await apiClient(`orders/${id}`);
 };
 
 export const createOrder = async (orderData) => {
-    const response = await fetch(`${API_BASE_URL}/orders`, {
+    return await apiClient('orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-        credentials: 'include'
+        body: orderData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const updateOrderStatus = async (id, status) => {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
+    return await apiClient(`orders/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-        credentials: 'include'
+        body: { status }
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
+

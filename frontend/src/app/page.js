@@ -14,6 +14,7 @@ import { getProducts, getCategories } from '@/api/product.api';
 import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
+
 import SkeletonCard from '@/components/SkeletonCard';
 /**
  * Professional & Unique Home Page
@@ -35,15 +36,19 @@ export default function Home() {
         const [featuredRes, newArrivalsRes, dealsRes, categoriesRes] = await Promise.all([
           getProducts({ featured: true, limit: 8 }),
           getProducts({ sort: 'newest', limit: 8 }),
-          getProducts({ discount: true, limit: 16 }),
+          getProducts({ discount: 'true', limit: 20 }), // Fetch more to filter
           getCategories()
         ]);
 
         setFeaturedProducts((featuredRes.data || featuredRes).map(flattenProduct));
         setNewArrivals((newArrivalsRes.data || newArrivalsRes).map(flattenProduct));
-        const deals = (dealsRes.data || dealsRes).map(flattenProduct);
-        setWeeklyDeals(deals.slice(0, 8));
-        setValueDeals(deals.slice(8, 16));
+
+        const allDeals = (dealsRes.data || dealsRes).map(flattenProduct);
+        // Weekly Deals: High discount (>= 20%)
+        setWeeklyDeals(allDeals.filter(p => (p.discount || 0) >= 20).slice(0, 10));
+        // Value Deals: All discounted products
+        setValueDeals(allDeals.slice(0, 10));
+
         setCategories(categoriesRes.data || categoriesRes);
       } catch (error) {
         console.error('Failed to fetch homepage data:', error);
@@ -68,44 +73,38 @@ export default function Home() {
         <HeroBanner />
       </div>
 
-
-
-      {/* 3. WEEKLY DEALS - ENHANCED */}
+      {/* 3. WEEKLY DEALS - PREMIUM OVERHAUL */}
       {weeklyDeals.length > 0 && (
-        <section className="relative z-10 py-24 bg-gradient-to-br from-green-50/60 via-white to-emerald-50/40 overflow-hidden">
-          {/* Decorative Elements */}
-          <div className="absolute top-20 right-10 w-32 h-32 bg-green-300/10 rounded-full blur-2xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-10 w-40 h-40 bg-emerald-300/10 rounded-full blur-3xl animate-blob"></div>
+        <section className="relative z-10 py-24 md:py-32 bg-white overflow-hidden">
+          {/* Abstract background text */}
+          <div className="absolute top-0 right-0 text-[15rem] font-black text-gray-50 select-none pointer-events-none -translate-y-1/4 translate-x-1/4 leading-none uppercase tracking-tighter opacity-50">
+            WEEKLY
+          </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            {/* Header with Badge */}
-            <div className="mb-16 space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200/80 shadow-sm">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-600 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-600"></span>
-                </span>
-                <span className="text-xs font-black uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600">⚡ Hot Deals Live</span>
-              </div>
-              <div className="space-y-3">
-                <h2 className="text-5xl md:text-6xl font-black text-gray-900 leading-tight">
-                  {t.cat_weekly_deals}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 shadow-sm">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">{t.live_now || "LIVE: FLASH SALES"}</span>
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-none">
+                  {t.weekly_deals_title || "Weekly Deals"}
                 </h2>
-                <p className="text-lg text-gray-600 font-medium max-w-xl">
-                  🔥 Limited time offers on premium fresh groceries. Save big while stocks last!
+                <p className="text-lg text-gray-500 font-medium max-w-xl">
+                  {t.weekly_deals_subtitle || "Exclusive flash sales on high-demand items. Refreshing every Monday morning."}
                 </p>
               </div>
-            </div>
-
-            <div className="flex justify-end mb-8">
-              <Link href="/deals/weekly" className="group relative inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
-                <span>Explore Deals</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              <Link href="/deals/weekly" className="group flex items-center gap-4 px-10 py-5 bg-[#1A1A1A] text-white rounded-[2rem] font-black uppercase tracking-widest text-sm hover:translate-y-[-4px] transition-all shadow-xl active:scale-95">
+                <span>{t.view_all || "View All Deals"}</span>
+                <span className="group-hover:translate-x-2 transition-transform">→</span>
               </Link>
             </div>
 
             <DealsCarousel
-              title=""
               products={weeklyDeals}
               badgeType="weekly-deal"
               isLoading={isDataLoading}
@@ -114,47 +113,46 @@ export default function Home() {
         </section>
       )}
 
-      {/* 4. VALUE DEALS - ENHANCED */}
+      {/* 4. VALUE DEALS - PREMIUM OVERHAUL */}
       {valueDeals.length > 0 && (
-        <section className="relative z-10 py-24 bg-white overflow-hidden">
-          {/* Side Decoration */}
-          <div className="absolute top-1/3 -right-32 w-64 h-64 bg-gradient-to-br from-blue-200/20 to-cyan-200/10 rounded-full blur-3xl animate-blob animation-delay-3000"></div>
+        <section className="relative z-10 py-24 md:py-32 bg-[#F9F7F2] overflow-hidden">
+          {/* Decorative geometric element */}
+          <div className="absolute bottom-0 left-0 w-1/3 h-full bg-gradient-to-tr from-green-100/30 to-transparent pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            {/* Header with Badge */}
-            <div className="mb-16 space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-200/80 shadow-sm">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-pulse inline-flex h-full w-full rounded-full bg-blue-600"></span>
-                </span>
-                <span className="text-xs font-black uppercase tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600">💎 Best Value</span>
-              </div>
-              <div className="space-y-3">
-                <h2 className="text-5xl md:text-6xl font-black text-gray-900 leading-tight">
-                  {t.cat_value_deals}
-                </h2>
-                <p className="text-lg text-gray-600 font-medium max-w-xl">
-                  💰 Premium quality products at unbeatable prices. Smart savings for smart shoppers!
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">
+              {/* Fixed content area for desktop */}
+              <div className="lg:col-span-1 space-y-8 sticky top-32">
+                <div className="space-y-4">
+                  <div className="h-1.5 w-16 bg-green-600 rounded-full"></div>
+                  <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase leading-[0.9]">
+                    {t.value_deals_title || "Value Deals"}
+                  </h2>
+                </div>
+                <p className="text-lg text-gray-600 font-medium leading-relaxed">
+                  {t.value_deals_subtitle || "Wallet-friendly prices on everyday staples. Smart savings for smart shoppers."}
                 </p>
+                <div className="pt-4">
+                  <Link href="/deals/value" className="inline-flex items-center gap-3 text-sm font-black uppercase tracking-widest text-green-700 hover:gap-5 transition-all group">
+                    {t.shop_deals || "Shop All Deals"}
+                    <span className="group-hover:scale-125 transition-transform">→</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Carousel Area */}
+              <div className="lg:col-span-3">
+                <DealsCarousel
+                  products={valueDeals}
+                  badgeType="value-deal"
+                  isLoading={isDataLoading}
+                />
               </div>
             </div>
-
-            <div className="flex justify-end mb-8">
-              <Link href="/deals/value" className="group relative inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95">
-                <span>Shop Value Deals</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </Link>
-            </div>
-
-            <DealsCarousel
-              title=""
-              products={valueDeals}
-              badgeType="value-deal"
-              isLoading={isDataLoading}
-            />
           </div>
         </section>
       )}
+
 
       {/* 5. PROMOTIONAL BANNERS */}
       <div className="relative z-10">

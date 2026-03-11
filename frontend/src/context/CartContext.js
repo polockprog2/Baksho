@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useUser } from './UserContext';
 
 // Create Cart Context
 const CartContext = createContext();
@@ -16,41 +17,53 @@ export const useCart = () => {
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
+    const { user } = useUser();
     const [cartItems, setCartItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    // Load cart from localStorage on mount
+    // Determine storage key based on user ID
+    const cartKey = user?.id ? `cart_${user.id}` : 'cart_guest';
+
+    // Load cart from localStorage whenever the user (and thus the key) changes
     useEffect(() => {
         if (typeof window === 'undefined') {
             setIsLoading(false);
             return;
         }
-        const savedCart = localStorage.getItem('cart');
+
+        setIsLoading(true);
+        const savedCart = localStorage.getItem(cartKey);
+
         if (savedCart) {
             try {
                 setCartItems(JSON.parse(savedCart));
             } catch (error) {
-                console.error('Error loading cart from localStorage:', error);
+                console.error(`Error loading cart from ${cartKey}:`, error);
+                setCartItems([]);
             }
+        } else {
+            // If no saved cart for this user/guest, reset to empty
+            setCartItems([]);
         }
-        setIsLoading(false);
-    }, []);
 
-    // Save cart to localStorage whenever it changes
+        setIsLoading(false);
+    }, [cartKey]);
+
+    // Save cart to localStorage whenever it items or the user changes
     useEffect(() => {
         if (!isLoading && typeof window !== 'undefined') {
             try {
-                localStorage.setItem('cart', JSON.stringify(cartItems));
+                localStorage.setItem(cartKey, JSON.stringify(cartItems));
             } catch (error) {
-                console.error('Failed to save cart to localStorage:', error);
-                // Handle quota exceeded error or other storage issues
+                console.error(`Failed to save cart to ${cartKey}:`, error);
                 if (error.name === 'QuotaExceededError') {
                     alert('Your shopping cart is too full to save locally. Please checkout soon!');
                 }
             }
         }
-    }, [cartItems, isLoading]);
+    }, [cartItems, cartKey, isLoading]);
+
 
     // Add item to cart
     const addToCart = (product, quantity = 1) => {

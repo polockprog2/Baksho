@@ -1,5 +1,4 @@
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import apiClient from './apiClient';
 
 /**
  * Service to fetch optimized dashboard metrics from the backend
@@ -7,17 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/a
  */
 export const getDashboardStats = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/dashboard/stats`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok) {
-            return await response.json();
-        }
-
-        // If not OK (e.g. 401), throw to catch block for mock fallback
-        throw new Error(`API returned ${response.status}`);
+        return await apiClient('dashboard/stats');
     } catch (error) {
         console.warn('Dashboard API failed, using high-quality mock data:', error.message);
 
@@ -53,3 +42,4 @@ export const getDashboardStats = async () => {
         };
     }
 };
+

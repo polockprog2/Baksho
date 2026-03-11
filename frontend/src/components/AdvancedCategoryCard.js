@@ -1,12 +1,13 @@
-"use client";
-
-import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
 
 /**
  * AdvancedCategoryCard Component
  * A premium category card with glassmorphism, hover animations, and background glow
  */
 export default function AdvancedCategoryCard({ category }) {
+    const [imgSrc, setImgSrc] = useState(category.image || null);
+
     return (
         <Link
             href={`/products?category=${category.slug}`}
@@ -18,16 +19,14 @@ export default function AdvancedCategoryCard({ category }) {
 
                 {/* Card */}
                 <div className="aspect-square rounded-2xl bg-white/60 backdrop-blur-sm border-2 border-white/80 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:border-green-400 group-hover:shadow-2xl group-hover:-translate-y-2 group-hover:bg-white/80">
-                    {category.image ? (
+                    {imgSrc ? (
                         <div className="w-full h-full relative">
-                            <img
-                                src={category.image}
+                            <Image
+                                src={imgSrc}
                                 alt={category.name}
-                                className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=100';
-                                }}
+                                fill
+                                className="object-cover group-hover:scale-125 transition-transform duration-700"
+                                onError={() => setImgSrc('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=100')}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         </div>

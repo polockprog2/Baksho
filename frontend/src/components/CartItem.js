@@ -1,14 +1,15 @@
-"use client";
-
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
 import { formatPrice } from '@/utils/helpers';
+import { useState } from 'react';
 
 export default function CartItem({ item }) {
     const { updateQuantity, removeFromCart } = useCart();
     const { language } = useLanguage();
     const t = translations[language] || translations.EN;
+    const [imgError, setImgError] = useState(false);
 
     const handleQuantityChange = (newQuantity) => {
         if (newQuantity < 1) {
@@ -21,29 +22,28 @@ export default function CartItem({ item }) {
     return (
         <div className="flex gap-6 p-5 bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-gray-100 hover:shadow-xl transition-all duration-300">
             {/* Product Image */}
-            <div className="w-24 h-24 bg-[#F9F7F2] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden p-2">
-                {item.image ? (
-                    <img
+            <div className="w-24 h-24 bg-[#F9F7F2] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden p-2 relative">
+                {item.image && !imgError ? (
+                    <Image
                         src={item.image}
                         alt={item.name}
-                        className="w-full h-full object-contain drop-shadow-lg"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'block';
-                        }}
+                        fill
+                        className="object-contain drop-shadow-lg"
+                        onError={() => setImgError(true)}
                     />
-                ) : null}
-                <div className={`text-4xl ${item.image ? 'hidden' : 'block'}`}>
-                    {item.category === 'vegetables' && '🥬'}
-                    {item.category === 'fruits' && '🍎'}
-                    {item.category === 'meat-fish' && '🥩'}
-                    {item.category === 'dairy' && '🥛'}
-                    {item.category === 'packaged-food' && '🍝'}
-                    {item.category === 'household' && '🧹'}
-                    {!['vegetables', 'fruits', 'meat-fish', 'dairy', 'packaged-food', 'household'].includes(item.category) && '🛒'}
-                </div>
+                ) : (
+                    <div className="text-4xl">
+                        {item.category === 'vegetables' && '🥬'}
+                        {item.category === 'fruits' && '🍎'}
+                        {item.category === 'meat-fish' && '🥩'}
+                        {item.category === 'dairy' && '🥛'}
+                        {item.category === 'packaged-food' && '🍝'}
+                        {item.category === 'household' && '🧹'}
+                        {!['vegetables', 'fruits', 'meat-fish', 'dairy', 'packaged-food', 'household'].includes(item.category) && '🛒'}
+                    </div>
+                )}
             </div>
+
 
             {/* Product Info */}
             <div className="flex-1 flex flex-col justify-center">

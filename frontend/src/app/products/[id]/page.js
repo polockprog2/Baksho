@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -91,6 +92,8 @@ export default function ProductDetailPage() {
         );
     }
 
+    const mainImage = product.images?.[0]?.imageUrl || product.image;
+
     return (
         <div className="bg-[#F9F7F2] min-h-screen py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -108,18 +111,14 @@ export default function ProductDetailPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                         {/* Product Image Section */}
                         <div className="relative group">
-                            <div className="aspect-square bg-[#F9F7F2] rounded-[2.5rem] flex items-center justify-center shadow-inner transition-transform duration-500 group-hover:scale-105 overflow-hidden p-8">
-                                {product.images?.length > 0 ? (
-                                    <img
-                                        src={product.images[0].imageUrl}
+                            <div className="aspect-square bg-[#F9F7F2] rounded-[2.5rem] flex items-center justify-center shadow-inner transition-transform duration-500 group-hover:scale-105 overflow-hidden p-8 relative">
+                                {mainImage ? (
+                                    <Image
+                                        src={mainImage}
                                         alt={product.name}
-                                        className="w-full h-full object-contain drop-shadow-2xl"
-                                    />
-                                ) : product.image ? (
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-full object-contain drop-shadow-2xl"
+                                        fill
+                                        className="object-contain drop-shadow-2xl"
+                                        priority
                                     />
                                 ) : (
                                     <div className="text-[12rem]">

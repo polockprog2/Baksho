@@ -1,4 +1,8 @@
+"use client";
+
 import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
 
 /**
  * CategoryCard Component - Image Background Style
@@ -6,26 +10,26 @@ import Link from 'next/link';
  */
 export default function CategoryCard({ category }) {
     const isNew = category.badge === 'NEW';
+    const [imgSrc, setImgSrc] = useState(category.image || null);
 
     return (
         <Link href={`/products?category=${category.slug}`}>
             <div className="relative aspect-[4/5] h-full cursor-pointer rounded-2xl overflow-hidden group border-2 border-gray-100 hover:border-green-300 transform hover:scale-105 active:scale-95 transition-all duration-500 hover:shadow-2xl">
                 {/* Background Image */}
-                {category.image ? (
-                    <img
-                        src={category.image}
+                {imgSrc ? (
+                    <Image
+                        src={imgSrc}
                         alt={category.name}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400';
-                        }}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        onError={() => setImgSrc('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400')}
                     />
                 ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center text-8xl group-hover:scale-110 transition-transform duration-700">
                         {category.icon}
                     </div>
                 )}
+
 
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-500"></div>

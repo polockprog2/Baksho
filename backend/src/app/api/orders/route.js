@@ -3,12 +3,14 @@ import { orderSchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
+import { handleApiError } from "@/lib/errorHandler"
 
 export async function GET(req) {
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            throw new Error("Unauthorized");
         }
 
         const { searchParams } = new URL(req.url)
@@ -39,6 +41,8 @@ export async function GET(req) {
                 { user: { email: { contains: search, mode: 'insensitive' } } }
             ]
         }
+
+        logger.info(`Fetching orders [page=${page}, status=${status}, user=${session.user.id}]`);
 
         const [orders, total] = await Promise.all([
             prisma.order.findMany({
@@ -77,8 +81,7 @@ export async function GET(req) {
             }
         })
     } catch (error) {
-        console.error("Orders GET error:", error)
-        return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 })
+        return handleApiError(error, "Orders GET");
     }
 }
 
@@ -86,11 +89,13 @@ export async function POST(req) {
     try {
         const session = await getServerSession(authOptions)
         if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            throw new Error("Unauthorized");
         }
 
         const body = await req.json()
         const validated = orderSchema.parse(body)
+
+        logger.info(`Creating new order for user: ${session.user.id}`);
 
         // Transaction to create order and update inventory
         const order = await prisma.$transaction(async (tx) => {
@@ -159,7 +164,7 @@ export async function POST(req) {
 
         return NextResponse.json(order, { status: 201 })
     } catch (error) {
-        console.error("Orders POST error:", error)
-        return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 400 })
+        return handleApiError(error, "Orders POST");
     }
 }
+

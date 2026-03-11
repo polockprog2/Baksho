@@ -3,6 +3,8 @@ import { productSchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
+import { handleApiError } from "@/lib/errorHandler"
 
 export async function GET(req) {
     try {
@@ -25,13 +27,9 @@ export async function GET(req) {
             where.featured = true
         }
         if (hasDiscount) {
-            // Filter products where at least one variant has a price lower than originalPrice
             where.variants = {
                 some: {
-                    originalPrice: {
-                        gt: 0 // We can't easily compare originalPrice > price in Prisma where, 
-                        // but we can at least filter variants that HAVE an originalPrice set
-                    }
+                    originalPrice: { gt: 0 }
                 }
             }
         }
@@ -52,6 +50,8 @@ export async function GET(req) {
         } else {
             orderBy = { createdAt: 'desc' }
         }
+
+        logger.info(`Fetching products [page=${page}, limit=${limit}, category=${category}]`);
 
         const [products, total] = await Promise.all([
             prisma.product.findMany({
@@ -78,8 +78,7 @@ export async function GET(req) {
             }
         })
     } catch (error) {
-        console.error("Products GET error:", error)
-        return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 })
+        return handleApiError(error, "Products GET");
     }
 }
 
@@ -87,14 +86,16 @@ export async function POST(req) {
     try {
         const session = await getServerSession(authOptions)
         if (!session || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+            throw new Error("Unauthorized");
         }
 
         const body = await req.json()
         const validated = productSchema.parse(body)
 
+        logger.info(`Creating new product: ${validated.name}`);
+
         const product = await prisma.$transaction(async (tx) => {
-            const newProduct = await tx.product.create({
+            return await tx.product.create({
                 data: {
                     name: validated.name,
                     slug: validated.slug,
@@ -123,12 +124,11 @@ export async function POST(req) {
                     images: true
                 }
             })
-            return newProduct
         })
 
         return NextResponse.json(product, { status: 201 })
     } catch (error) {
-        console.error("Products POST error:", error)
-        return NextResponse.json({ error: error.message || "Failed to create product" }, { status: 400 })
+        return handleApiError(error, "Products POST");
     }
 }
+

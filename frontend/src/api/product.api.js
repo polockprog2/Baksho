@@ -1,5 +1,4 @@
-// product.api.js
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import apiClient from './apiClient';
 
 /**
  * Service to handle product API calls
@@ -14,132 +13,79 @@ export const getProducts = async (params = {}) => {
     if (params.discount) queryParams.append('discount', params.discount);
     if (params.sort) queryParams.append('sort', params.sort);
 
-    const url = `${API_BASE_URL}/products${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    const queryString = queryParams.toString();
+    return await apiClient(`products${queryString ? '?' + queryString : ''}`);
 };
 
 export const getProductById = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    return await apiClient(`products/${id}`);
 };
 
 export const createProduct = async (productData) => {
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    return await apiClient('products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData)
+        body: productData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const getCategories = async () => {
-    const response = await fetch(`${API_BASE_URL}/categories`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
+    return await apiClient('categories');
 };
 
 export const updateProduct = async (id, productData) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    return await apiClient(`products/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData)
+        body: productData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const deleteProduct = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+    return await apiClient(`products/${id}`, {
+        method: 'DELETE'
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const createCategory = async (categoryData) => {
-    const response = await fetch(`${API_BASE_URL}/categories`, {
+    return await apiClient('categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categoryData)
+        body: categoryData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const updateCategory = async (id, categoryData) => {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    return await apiClient(`categories/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(categoryData)
+        body: categoryData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const deleteCategory = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' }
+    return await apiClient(`categories/${id}`, {
+        method: 'DELETE'
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const adjustStock = async (productId, amount) => {
-    const response = await fetch(`${API_BASE_URL}/products/inventory`, {
+    return await apiClient('products/inventory', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'adjust', productIds: [productId], amount })
+        body: { action: 'adjust', productIds: [productId], amount }
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
 
 export const restockLowItems = async () => {
-    const response = await fetch(`${API_BASE_URL}/products/inventory`, {
+    return await apiClient('products/inventory', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'restock-low' })
+        body: { action: 'restock-low' }
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
+
 export const bulkUploadProducts = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/products/bulk`, {
+    return await apiClient('products/bulk', {
         method: 'POST',
-        // Note: Do not set Content-Type header when sending FormData, 
-        // the browser will set it automatically with the correct boundary.
         body: formData
     });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
 };
+
