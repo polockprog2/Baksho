@@ -8,6 +8,7 @@ import { UIProvider } from "@/context/UIContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import LayoutContent from "@/components/LayoutContent";
 import Providers from "@/components/Providers";
+import StyledJsxRegistry from "@/lib/registry";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,21 +34,23 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`} suppressHydrationWarning>
-        <Providers>
-          <LanguageProvider>
-            <UIProvider>
-              <UserProvider>
-                <WishlistProvider>
-                  <BannerProvider>
-                    <CartProvider>
-                      <LayoutContent>{children}</LayoutContent>
-                    </CartProvider>
-                  </BannerProvider>
-                </WishlistProvider>
-              </UserProvider>
-            </UIProvider>
-          </LanguageProvider>
-        </Providers>
+        <StyledJsxRegistry>
+          <Providers>
+            <LanguageProvider>
+              <UIProvider>
+                <UserProvider>
+                  <WishlistProvider>
+                    <BannerProvider>
+                      <CartProvider>
+                        <LayoutContent>{children}</LayoutContent>
+                      </CartProvider>
+                    </BannerProvider>
+                  </WishlistProvider>
+                </UserProvider>
+              </UIProvider>
+            </LanguageProvider>
+          </Providers>
+        </StyledJsxRegistry>
       </body>
     </html>
   );

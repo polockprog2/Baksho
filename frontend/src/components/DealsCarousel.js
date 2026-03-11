@@ -85,7 +85,7 @@ export default function DealsCarousel({ products, badgeType = 'sale', isLoading 
             {/* Carousel Container */}
             <div
                 ref={scrollRef}
-                className="flex gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-12 pt-4 px-2"
+                className="flex gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-3 pt-4 px-2"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {isLoading ? (

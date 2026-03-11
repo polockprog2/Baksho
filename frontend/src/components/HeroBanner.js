@@ -122,30 +122,6 @@ export default function HeroBanner({ content }) {
                 </div>
             </div>
 
-            <style jsx>{`
-                @keyframes fade-in-up {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in-up {
-                    animation: fade-in-up 0.8s ease-out forwards;
-                    opacity: 0;
-                }
-                .animate-bounce-slow {
-                    animation: bounce-slow 4s infinite ease-in-out;
-                }
-                @keyframes bounce-slow {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-10px); }
-                }
-                .animate-pulse-slow {
-                    animation: pulse-slow 3s infinite ease-in-out;
-                }
-                @keyframes pulse-slow {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.05); }
-                }
-            `}</style>
         </section>
     );
 }

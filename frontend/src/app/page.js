@@ -465,50 +465,6 @@ export default function Home() {
         <FloatingSupport />
       </div>
 
-      {/* Custom Animations in styles */}
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-        
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-blob {
-          animation: blob 8s infinite;
-        }
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-
-        .animate-fade-in-up {
-          animation: fade-in-up 0.7s ease-out forwards;
-          opacity: 0;
-        }
-
-        .bg-radial-gradient {
-          background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
-        }
-      `}</style>
     </div>
   );
 }
