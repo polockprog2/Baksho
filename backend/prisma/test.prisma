@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:PolockProg@09@localhost:5432/postgres"
+  url      = "$"
 }
 
 model Test {
