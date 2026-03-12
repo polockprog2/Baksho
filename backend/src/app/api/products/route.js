@@ -41,13 +41,10 @@ export async function GET(req) {
         }
 
         let orderBy = {}
-        if (sort === "price-low") {
-            orderBy = { variants: { _count: 'asc' } }
-        } else if (sort === "price-high") {
-            orderBy = { variants: { _count: 'desc' } }
-        } else if (sort === "name-az") {
+        const sortByPrice = sort === "price-low" || sort === "price-high";
+        if (sort === "name-az") {
             orderBy = { name: 'asc' }
-        } else {
+        } else if (!sortByPrice) {
             orderBy = { createdAt: 'desc' }
         }
 
@@ -61,15 +58,25 @@ export async function GET(req) {
                     variants: true,
                     images: true
                 },
-                orderBy,
+                orderBy: sortByPrice ? { createdAt: 'desc' } : orderBy,
                 skip,
                 take: limit
             }),
             prisma.product.count({ where })
         ])
 
+        // Post-process: sort by first variant price if requested
+        let sortedProducts = products;
+        if (sortByPrice) {
+            sortedProducts = [...products].sort((a, b) => {
+                const priceA = a.variants?.[0]?.price || 0;
+                const priceB = b.variants?.[0]?.price || 0;
+                return sort === "price-low" ? priceA - priceB : priceB - priceA;
+            });
+        }
+
         return NextResponse.json({
-            data: products,
+            data: sortedProducts,
             meta: {
                 total,
                 page,

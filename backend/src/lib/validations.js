@@ -62,6 +62,14 @@ export const orderItemSchema = z.object({
     price: z.number().positive(),
 });
 
+export const deliveryAddressSchema = z.object({
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    zipCode: z.string().min(1, 'Zip code is required'),
+    country: z.string().optional(),
+});
+
 export const orderSchema = z.object({
     items: z.array(orderItemSchema).min(1, 'Order must have at least one item'),
     subtotal: z.number().nonnegative(),
@@ -69,5 +77,9 @@ export const orderSchema = z.object({
     deliveryFee: z.number().nonnegative(),
     total: z.number().positive(),
     paymentMethod: z.string(),
-    deliveryAddressId: z.string().min(1, 'Delivery address is required'),
-});
+    deliveryAddressId: z.string().optional(),
+    deliveryAddress: deliveryAddressSchema.optional(),
+}).refine(
+    (data) => data.deliveryAddressId || data.deliveryAddress,
+    { message: 'Either deliveryAddressId or deliveryAddress is required' }
+);

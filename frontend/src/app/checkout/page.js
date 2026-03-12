@@ -81,7 +81,6 @@ export default function CheckoutPage() {
         setIsSubmitting(true);
         try {
             const orderData = {
-                userId: user?.id || null,
                 items: cartItems.map(item => ({
                     variantId: item.variantId,
                     quantity: item.quantity,
@@ -91,8 +90,21 @@ export default function CheckoutPage() {
                 tax: getCartTax(),
                 deliveryFee: getDeliveryFee(),
                 total: getCartGrandTotal(),
-                deliveryAddressId: user?.addresses?.[0]?.id || 'temporary-id' // Simplified for now
+                paymentMethod: formData.paymentMethod,
+                // Send inline address from the checkout form
+                deliveryAddress: {
+                    street: formData.street,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.zipCode,
+                    country: 'USA'
+                }
             };
+
+            // If user has a saved address, also include the ID as a preference
+            if (user?.addresses?.[0]?.id) {
+                orderData.deliveryAddressId = user.addresses[0].id;
+            }
 
             const response = await createOrder(orderData);
             const orderId = response.id || response.data?.id || Date.now();
@@ -100,7 +112,7 @@ export default function CheckoutPage() {
             router.push(`/order-success?orderId=${orderId}`);
         } catch (error) {
             console.error('Failed to create order:', error);
-            setErrors({ submit: t.order_error || 'Failed to create order. Please try again.' });
+            setErrors({ submit: error.message || t.order_error || 'Failed to create order. Please try again.' });
             setIsSubmitting(false);
         }
     };

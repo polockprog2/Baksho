@@ -1,6 +1,6 @@
 // Utility helper functions
 
-// Format price to currency
+// Format price to currency (standardized to USD)
 export const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
@@ -145,13 +145,21 @@ export const debounce = (func, wait) => {
 export const flattenProduct = (product) => {
     const mainVariant = product.variants?.[0] || {};
     const mainImage = product.images?.[0]?.imageUrl || product.image || '/placeholder-product.png';
+    const price = mainVariant.price || 0;
+    const originalPrice = mainVariant.originalPrice || 0;
+    const discount = originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
 
     return {
         ...product,
-        price: mainVariant.price || 0,
-        originalPrice: mainVariant.originalPrice || 0,
+        price,
+        originalPrice,
+        discount,
         stock: mainVariant.stock || 0,
         inStock: (mainVariant.stock || 0) > 0,
-        image: mainImage
+        image: mainImage,
+        variantId: mainVariant.id || null,
+        variantName: mainVariant.name || null,
+        totalVariants: product.variants?.length || 0
     };
 };
+

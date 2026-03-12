@@ -99,13 +99,51 @@ export async function POST(req) {
 
         // Transaction to create order and update inventory
         const order = await prisma.$transaction(async (tx) => {
-            // 1. Get original address for snapshot
-            const originalAddr = await tx.address.findUnique({
-                where: { id: validated.deliveryAddressId }
-            });
-            if (!originalAddr) throw new Error("Delivery address not found");
+            // 1. Resolve delivery address
+            let addressData;
+            if (validated.deliveryAddressId) {
+                // Use an existing saved address
+                const originalAddr = await tx.address.findUnique({
+                    where: { id: validated.deliveryAddressId }
+                });
+                if (!originalAddr) throw new Error("Delivery address not found");
+                addressData = {
+                    street: originalAddr.street,
+                    city: originalAddr.city,
+                    state: originalAddr.state,
+                    zipCode: originalAddr.zipCode,
+                    country: originalAddr.country
+                };
+            } else if (validated.deliveryAddress) {
+                // Use inline address fields sent from checkout
+                addressData = {
+                    street: validated.deliveryAddress.street,
+                    city: validated.deliveryAddress.city,
+                    state: validated.deliveryAddress.state,
+                    zipCode: validated.deliveryAddress.zipCode,
+                    country: validated.deliveryAddress.country || 'USA'
+                };
+            } else {
+                throw new Error("Delivery address is required");
+            }
 
-            // 2. Create Order
+            // 2. Validate stock availability BEFORE creating order
+            for (const item of validated.items) {
+                const variant = await tx.productVariant.findUnique({
+                    where: { id: item.variantId },
+                    select: { id: true, name: true, stock: true, product: { select: { name: true } } }
+                });
+                if (!variant) {
+                    throw new Error(`Product variant ${item.variantId} not found`);
+                }
+                if (variant.stock < item.quantity) {
+                    throw new Error(
+                        `Insufficient stock for "${variant.product.name} (${variant.name})": requested ${item.quantity}, only ${variant.stock} available`
+                    );
+                }
+            }
+
+            // 3. Create Order
             const newOrder = await tx.order.create({
                 data: {
                     userId: session.user.id,
@@ -116,13 +154,7 @@ export async function POST(req) {
                     paymentMethod: validated.paymentMethod,
                     status: 'PENDING',
                     address: {
-                        create: {
-                            street: originalAddr.street,
-                            city: originalAddr.city,
-                            state: originalAddr.state,
-                            zipCode: originalAddr.zipCode,
-                            country: originalAddr.country
-                        }
+                        create: addressData
                     },
                     items: {
                         create: validated.items.map(item => ({
@@ -139,7 +171,7 @@ export async function POST(req) {
                 }
             })
 
-            // 3. Update stocks and log inventory
+            // 4. Update stocks and log inventory
             for (const item of validated.items) {
                 await tx.productVariant.update({
                     where: { id: item.variantId },
