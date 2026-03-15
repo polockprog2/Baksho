@@ -90,7 +90,7 @@ export async function GET() {
         const stockDiff = lowStockCount - previousLowStock;
         const stockTrend = stockDiff >= 0 ? `+${stockDiff}` : `${stockDiff}`;
 
-        // Format top products with additional info
+        // Format top products with additional info including revenue
         const topProducts = await Promise.all(topVariantsRes.map(async (item) => {
             const variant = await prisma.productVariant.findUnique({
                 where: { id: item.variantId },
@@ -101,54 +101,53 @@ export async function GET() {
                         }
                     }
                 }
-            })
+            });
+
+            // Calculate revenue for this specific variant
+            const variantRevenueRes = await prisma.orderItem.aggregate({
+                _sum: { total: true },
+                where: { variantId: item.variantId }
+            });
+
             return {
                 id: variant?.productId,
                 variantId: item.variantId,
                 name: `${variant?.product.name} (${variant?.name})`,
                 sales: item._sum.quantity,
+                revenue: variantRevenueRes._sum.total || 0,
                 image: variant?.product.images[0]?.imageUrl,
                 price: variant?.price,
                 stock: variant?.stock
-            }
-        }))
+            };
+        }));
 
-        // Calculate real sales data for the last 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        const salesRes = await prisma.order.findMany({
-            where: {
-                createdAt: { gte: sevenDaysAgo }
-            },
-            select: {
-                total: true,
-                createdAt: true
-            }
-        });
-
-        // Group by day
+        // Calculate real sales data for the last 7 days with correct sorting
+        const salesData = [];
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const salesDataMap = {};
 
-        // Initialize last 7 days
-        for (let i = 0; i < 7; i++) {
+        for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            const dayName = days[date.getDay()];
-            salesDataMap[dayName] = 0;
+            date.setHours(0, 0, 0, 0);
+
+            const nextDay = new Date(date);
+            nextDay.setDate(date.getDate() + 1);
+
+            const dayRevenue = await prisma.order.aggregate({
+                _sum: { total: true },
+                where: {
+                    createdAt: {
+                        gte: date,
+                        lt: nextDay
+                    }
+                }
+            });
+
+            salesData.push({
+                name: days[date.getDay()],
+                sales: Number(dayRevenue._sum.total || 0)
+            });
         }
-
-        salesRes.forEach(order => {
-            const dayName = days[new Date(order.createdAt).getDay()];
-            if (salesDataMap[dayName] !== undefined) {
-                salesDataMap[dayName] += Number(order.total);
-            }
-        });
-
-        const salesData = Object.entries(salesDataMap)
-            .map(([name, sales]) => ({ name, sales }))
-            .reverse();
 
         // Format recent orders for the dashboard
         const formattedRecentOrders = recentOrders.map(order => {

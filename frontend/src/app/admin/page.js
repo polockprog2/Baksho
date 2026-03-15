@@ -15,14 +15,18 @@ import {
 export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                setIsLoading(true);
                 const data = await getDashboardStats();
                 setStats(data);
-            } catch (error) {
-                console.error('Failed to fetch dashboard stats:', error);
+                setError(null);
+            } catch (err) {
+                console.error('Failed to fetch dashboard stats:', err);
+                setError(err.message || 'An unexpected error occurred while loading dashboard data.');
             } finally {
                 setIsLoading(false);
             }
@@ -46,6 +50,22 @@ export default function AdminDashboard() {
                     <div className="lg:col-span-2 h-[450px] bg-white rounded-3xl border border-slate-100 shadow-sm"></div>
                     <div className="h-[450px] bg-white rounded-3xl border border-slate-100 shadow-sm"></div>
                 </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-white rounded-[2.5rem] border border-rose-100 shadow-xl m-8">
+                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center text-4xl mb-6">⚠️</div>
+                <h2 className="text-2xl font-black text-[#003B4A] mb-4">Connection to Dashboard Failed</h2>
+                <p className="text-slate-500 max-w-md mx-auto mb-8 font-medium">{error}</p>
+                <button 
+                    onClick={() => window.location.reload()}
+                    className="px-8 py-3 bg-[#003B4A] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#002B36] transition-all"
+                >
+                    Retry Connection
+                </button>
             </div>
         );
     }
