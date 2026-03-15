@@ -7,6 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
 import { getProducts } from '@/api/product.api';
+import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
 
@@ -29,9 +30,9 @@ export default function ValueDealsPage() {
                 // Optimized backend fetching using the discount=true filter
                 const response = await getProducts({ discount: 'true', limit: 20 });
                 const allProducts = response.data || response;
-                // Filter for general value deals (e.g., at least 10% discount)
+                // Filter for general value deals
                 const deals = Array.isArray(allProducts)
-                    ? allProducts.filter(p => (p.discount || 0) >= 10).slice(0, 12)
+                    ? allProducts.map(flattenProduct).filter(p => (p.discount || 0) > 0).slice(0, 12)
                     : [];
                 setProducts(deals);
             } catch (err) {

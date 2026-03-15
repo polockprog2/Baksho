@@ -14,7 +14,6 @@ import { getProducts, getCategories } from '@/api/product.api';
 import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
-
 import SkeletonCard from '@/components/SkeletonCard';
 /**
  * Professional & Unique Home Page
@@ -25,6 +24,7 @@ export default function Home() {
   const [weeklyDeals, setWeeklyDeals] = useState([]);
   const [valueDeals, setValueDeals] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [homepageSettings, setHomepageSettings] = useState({});
   const [isDataLoading, setIsDataLoading] = useState(true);
   const { language } = useLanguage();
   const t = translations[language] || translations.EN;
@@ -33,23 +33,25 @@ export default function Home() {
     const fetchData = async () => {
       setIsDataLoading(true);
       try {
-        const [featuredRes, newArrivalsRes, dealsRes, categoriesRes] = await Promise.all([
+        const [featuredRes, newArrivalsRes, dealsRes, categoriesRes, settingsRes] = await Promise.all([
           getProducts({ featured: true, limit: 8 }),
           getProducts({ sort: 'newest', limit: 8 }),
           getProducts({ discount: 'true', limit: 20 }), // Fetch more to filter
-          getCategories()
+          getCategories(),
+          fetch('/api/settings/homepage').then(res => res.json()).catch(() => ({}))
         ]);
 
         setFeaturedProducts((featuredRes.data || featuredRes).map(flattenProduct));
         setNewArrivals((newArrivalsRes.data || newArrivalsRes).map(flattenProduct));
 
         const allDeals = (dealsRes.data || dealsRes).map(flattenProduct);
-        // Weekly Deals: High discount (>= 20%)
-        setWeeklyDeals(allDeals.filter(p => (p.discount || 0) >= 20).slice(0, 10));
+        // Weekly Deals: High discount (>= 15%)
+        setWeeklyDeals(allDeals.filter(p => (p.discount || 0) >= 15).slice(0, 10));
         // Value Deals: All discounted products
         setValueDeals(allDeals.slice(0, 10));
 
         setCategories(categoriesRes.data || categoriesRes);
+        setHomepageSettings(settingsRes || {});
       } catch (error) {
         console.error('Failed to fetch homepage data:', error);
       } finally {
@@ -70,45 +72,51 @@ export default function Home() {
 
       {/* 1. HERO BANNER */}
       <div className="relative z-10">
-        <HeroBanner />
+        <HeroBanner content={homepageSettings} />
       </div>
 
-      {/* 3. WEEKLY DEALS - PREMIUM OVERHAUL */}
+      {/* 3. WEEKLY DEALS */}
       {weeklyDeals.length > 0 && (
         <section className="relative z-10 py-24 md:py-32 bg-white overflow-hidden">
-          {/* Abstract background text */}
-          <div className="absolute top-0 right-0 text-[15rem] font-black text-gray-50 select-none pointer-events-none -translate-y-1/4 translate-x-1/4 leading-none uppercase tracking-tighter opacity-50">
-            WEEKLY
-          </div>
+          {/* Decorative geometric element */}
+          <div className="absolute bottom-0 right-0 w-1/3 h-full bg-gradient-to-tl from-red-100/30 to-transparent pointer-events-none" />
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 shadow-sm">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">{t.live_now || "LIVE: FLASH SALES"}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 items-start">
+              {/* Fixed content area for desktop */}
+              <div className="lg:col-span-1 space-y-8 sticky top-32">
+                <div className="space-y-4">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 shadow-sm">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                    </span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600">{t.live_now || "LIVE: FLASH SALES"}</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase leading-[0.9]">
+                    {t.weekly_deals_title || "Weekly Deals"}
+                  </h2>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tighter uppercase leading-none">
-                  {t.weekly_deals_title || "Weekly Deals"}
-                </h2>
-                <p className="text-lg text-gray-500 font-medium max-w-xl">
+                <p className="text-lg text-gray-600 font-medium leading-relaxed">
                   {t.weekly_deals_subtitle || "Exclusive flash sales on high-demand items. Refreshing every Monday morning."}
                 </p>
+                <div className="pt-4">
+                  <Link href="/deals/weekly" className="inline-flex items-center gap-3 text-sm font-black uppercase tracking-widest text-red-700 hover:gap-5 transition-all group">
+                    {t.view_all || "View All Deals"}
+                    <span className="group-hover:translate-x-2 transition-transform">→</span>
+                  </Link>
+                </div>
               </div>
-              <Link href="/deals/weekly" className="group flex items-center gap-4 px-10 py-5 bg-[#1A1A1A] text-white rounded-[2rem] font-black uppercase tracking-widest text-sm hover:translate-y-[-4px] transition-all shadow-xl active:scale-95">
-                <span>{t.view_all || "View All Deals"}</span>
-                <span className="group-hover:translate-x-2 transition-transform">→</span>
-              </Link>
-            </div>
 
-            <DealsCarousel
-              products={weeklyDeals}
-              badgeType="weekly-deal"
-              isLoading={isDataLoading}
-            />
+              {/* Carousel Area */}
+              <div className="lg:col-span-3">
+                <DealsCarousel
+                  products={weeklyDeals}
+                  badgeType="weekly-deal"
+                  isLoading={isDataLoading}
+                />
+              </div>
+            </div>
           </div>
         </section>
       )}

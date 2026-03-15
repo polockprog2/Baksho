@@ -214,7 +214,7 @@ export default function Navbar() {
                                     <span className="hidden lg:block font-medium text-gray-700">{user.name || 'User'}</span>
                                 </button>
 
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-sm shadow-xl border border-emerald-200 py-2 opacity-10 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                     <Link href="/profile" className="block px-4 py-2 hover:bg-green-50 transition-colors text-gray-700">
                                         My Profile
                                     </Link>

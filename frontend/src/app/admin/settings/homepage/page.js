@@ -14,6 +14,10 @@ export default function HomepageCMS() {
         hero_title: '',
         hero_desc: '',
         hero_cta: '',
+        hero_image: '',
+        hero_badge: '',
+        hero_rating_text: '',
+        hero_discount_text: '',
         weekly_deals_title: '',
         weekly_deals_desc: '',
         value_deals_title: '',
@@ -36,6 +40,10 @@ export default function HomepageCMS() {
                     hero_title: data.hero_title || t.hero_title || '',
                     hero_desc: data.hero_desc || t.hero_desc || '',
                     hero_cta: data.hero_cta || t.shop_now || '',
+                    hero_image: data.hero_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200',
+                    hero_badge: data.hero_badge || t.cat_weekly_deals || 'Weekly Deals',
+                    hero_rating_text: data.hero_rating_text || '4.9/5.0 Store',
+                    hero_discount_text: data.hero_discount_text || 'Up to 45% OFF',
                     weekly_deals_title: data.weekly_deals_title || t.cat_weekly_deals || '',
                     weekly_deals_desc: data.weekly_deals_desc || '⚡ Hot Deals Live',
                     value_deals_title: data.value_deals_title || t.cat_value_deals || '',
@@ -99,6 +107,10 @@ export default function HomepageCMS() {
                     <Field label="Hero Title" name="hero_title" value={settings.hero_title} onChange={handleChange} />
                     <Field label="Hero Description" name="hero_desc" value={settings.hero_desc} onChange={handleChange} isTextArea />
                     <Field label="Hero CTA Button" name="hero_cta" value={settings.hero_cta} onChange={handleChange} />
+                    <Field label="Hero Image URL" name="hero_image" value={settings.hero_image} onChange={handleChange} />
+                    <Field label="Hero Badge Text" name="hero_badge" value={settings.hero_badge} onChange={handleChange} />
+                    <Field label="Rating Card Text" name="hero_rating_text" value={settings.hero_rating_text} onChange={handleChange} />
+                    <Field label="Discount Card Text" name="hero_discount_text" value={settings.hero_discount_text} onChange={handleChange} />
                 </Section>
 
                 {/* Weekly Deals Section */}

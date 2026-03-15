@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getProducts } from '@/api/product.api';
+import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
 
@@ -54,7 +55,7 @@ export default function WeeklyDealsPage() {
                 const response = await getProducts({ discount: 'true', limit: 20 });
                 const allProducts = response.data || response;
                 const deals = Array.isArray(allProducts)
-                    ? allProducts.filter(p => (p.discount || 0) >= 20).slice(0, 12)
+                    ? allProducts.map(flattenProduct).filter(p => (p.discount || 0) >= 15).slice(0, 12)
                     : [];
                 setProducts(deals);
             } catch (err) {

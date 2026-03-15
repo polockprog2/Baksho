@@ -14,7 +14,7 @@ export default function CategoryCard({ category }) {
 
     return (
         <Link href={`/products?category=${category.slug}`}>
-            <div className="relative aspect-[4/5] h-full cursor-pointer rounded-2xl overflow-hidden group border-2 border-gray-100 hover:border-green-300 transform hover:scale-105 active:scale-95 transition-all duration-500 hover:shadow-2xl">
+            <div className="relative aspect-[4/5] h-full cursor-pointer rounded-2xl overflow-hidden group border border-gray-100 hover:border-teal-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-95 transition-all duration-500 shadow-sm hover:shadow-2xl">
                 {/* Background Image */}
                 {imgSrc ? (
                     <Image
@@ -31,14 +31,24 @@ export default function CategoryCard({ category }) {
                 )}
 
 
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all duration-500"></div>
+                {/* Dark Overlay - Premium Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#003B4A]/90 via-black/40 to-black/10 group-hover:from-[#003B4A]/95 transition-all duration-500"></div>
 
-                {/* Content - Centered */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <h3 className="text-sm md:text-base font-black text-white text-center uppercase tracking-tight line-clamp-2 drop-shadow-lg group-hover:drop-shadow-xl transition-all duration-300">
-                        {category.name}
-                    </h3>
+                {/* Content - Bottom Aligned */}
+                <div className="absolute inset-0 flex flex-col items-center justify-end p-6">
+                    <div className="w-full relative transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-out flex flex-col items-center">
+                        <h3 className="text-lg md:text-xl font-black text-white text-center uppercase tracking-tight line-clamp-2 drop-shadow-md mb-2">
+                            {category.name}
+                        </h3>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                            <span className="text-xs font-bold text-teal-200 uppercase tracking-widest flex items-center gap-1 group/btn">
+                                Explore
+                                <svg className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 {/* NEW Badge */}

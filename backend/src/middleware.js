@@ -54,6 +54,11 @@ export function middleware(request) {
         return new NextResponse(null, { status: 200, headers: response.headers })
     }
 
+    // Bypass rate limit in development mode
+    if (process.env.NODE_ENV === 'development') {
+        return response
+    }
+
     // Rate limiting
     const key = getRateLimitKey(request)
     const isAuthEndpoint = pathname.startsWith('/api/auth')

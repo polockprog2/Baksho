@@ -16,6 +16,10 @@ export default function HeroBanner({ content }) {
     const displayTitle = content?.hero_title || t.hero_title;
     const displayDesc = content?.hero_desc || t.hero_desc;
     const displayCTA = content?.hero_cta || t.shop_now;
+    const displayImage = content?.hero_image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200";
+    const displayBadge = content?.hero_badge || t.cat_weekly_deals || "Weekly Deals";
+    const displayRatingText = content?.hero_rating_text || "4.9/5.0 Store";
+    const displayDiscountText = content?.hero_discount_text || "Up to 45% OFF";
 
     return (
         <section className="relative bg-[#f8fafc] overflow-hidden">
@@ -32,7 +36,7 @@ export default function HeroBanner({ content }) {
                     <div className="flex flex-col">
                         <div className="inline-flex items-center gap-2 bg-green-50 px-5 py-2.5 rounded-2xl text-[10px] font-black text-green-700 mb-8 border border-green-100 shadow-sm uppercase tracking-widest animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                             <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                            {t.cat_weekly_deals}
+                            {displayBadge}
                         </div>
 
                         <h1 className="text-6xl md:text-8xl font-black text-[#003B4A] mb-8 leading-[0.95] tracking-tighter drop-shadow-sm">
@@ -89,8 +93,8 @@ export default function HeroBanner({ content }) {
                     <div className="relative group perspective-1000 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                         <div className="relative aspect-square md:aspect-auto md:h-[600px] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] z-20 group-hover:rotate-1 transition-transform duration-1000">
                             <Image
-                                src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200"
-                                alt="Fresh Groceries"
+                                src={displayImage}
+                                alt="Hero Banner Background"
                                 fill
                                 priority
                                 className="object-cover scale-110 group-hover:scale-100 transition-transform duration-[4s] ease-out"
@@ -105,7 +109,7 @@ export default function HeroBanner({ content }) {
                             </div>
                             <div>
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Top Rated</p>
-                                <p className="text-xl font-black text-[#003B4A] leading-tight">4.9/5.0 Store</p>
+                                <p className="text-xl font-black text-[#003B4A] leading-tight">{displayRatingText}</p>
                             </div>
                         </div>
 
@@ -115,7 +119,7 @@ export default function HeroBanner({ content }) {
                             </div>
                             <div>
                                 <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Member Deals</p>
-                                <p className="text-2xl font-black text-gray-900 leading-tight tracking-tighter">Up to 45% OFF</p>
+                                <p className="text-2xl font-black text-gray-900 leading-tight tracking-tighter">{displayDiscountText}</p>
                             </div>
                         </div>
                     </div>
