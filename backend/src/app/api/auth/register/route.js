@@ -31,6 +31,19 @@ export async function POST(req) {
             }
         })
 
+        // Generate verification token
+        const verificationToken = await prisma.verificationToken.create({
+            data: {
+                identifier: validated.email,
+                token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+                expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            }
+        })
+
+        // Send verification email
+        const { sendVerificationEmail } = await import("@/lib/mail")
+        await sendVerificationEmail(validated.email, verificationToken.token)
+
         // Return user without password
         const userWithoutPassword = { ...user }
         delete userWithoutPassword.password

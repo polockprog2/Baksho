@@ -11,7 +11,8 @@ import { createOrder } from '@/api/order.api';
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { cartItems, getCartSubtotal, getCartTax, getDeliveryFee, getCartGrandTotal, clearCart } = useCart();
+    const { cartItems, getCartSubtotal, getCartTax, getDeliveryFee, getCartGrandTotal, clearCart,
+        getCouponDiscount, appliedCoupon, couponError, isCouponLoading, applyCoupon, removeCoupon } = useCart();
     const { user } = useUser();
     const { language } = useLanguage();
     const t = translations[language] || translations.EN;
@@ -30,6 +31,7 @@ export default function CheckoutPage() {
 
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [couponInput, setCouponInput] = useState('');
 
     // Redirect if cart is empty - Move to useEffect to prevent render-time update error
     useEffect(() => {
@@ -91,6 +93,8 @@ export default function CheckoutPage() {
                 deliveryFee: getDeliveryFee(),
                 total: getCartGrandTotal(),
                 paymentMethod: formData.paymentMethod,
+                couponId: appliedCoupon?.id || null,
+                couponDiscount: getCouponDiscount(),
                 // Send inline address from the checkout form
                 deliveryAddress: {
                     street: formData.street,
@@ -302,11 +306,19 @@ export default function CheckoutPage() {
                                     ))}
                                 </div>
 
-                                <div className="border-t border-[#003B4A]/5 pt-8 space-y-4 mb-10">
+                                <div className="border-t border-[#003B4A]/5 pt-8 space-y-4 mb-6">
                                     <div className="flex justify-between text-gray-400 font-bold uppercase tracking-widest text-[10px]">
                                         <span>{t.subtotal}</span>
                                         <span className="text-[#003B4A]">{formatPrice(getCartSubtotal())}</span>
                                     </div>
+
+                                    {/* Coupon Discount */}
+                                    {appliedCoupon && (
+                                        <div className="flex justify-between text-emerald-600 font-bold uppercase tracking-widest text-[10px]">
+                                            <span>Coupon ({appliedCoupon.code})</span>
+                                            <span>-{formatPrice(getCouponDiscount())}</span>
+                                        </div>
+                                    )}
 
                                     <div className="flex justify-between text-gray-400 font-bold uppercase tracking-widest text-[10px]">
                                         <span>{t.tax} (8%)</span>
@@ -330,6 +342,54 @@ export default function CheckoutPage() {
                                             <span className="text-3xl font-black text-green-600 leading-none">{formatPrice(getCartGrandTotal())}</span>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Coupon Input */}
+                                <div className="mb-6">
+                                    {appliedCoupon ? (
+                                        <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3">
+                                            <div>
+                                                <p className="text-xs font-black text-emerald-700 uppercase tracking-widest">{appliedCoupon.code}</p>
+                                                <p className="text-xs text-emerald-600 font-medium">
+                                                    {appliedCoupon.type === 'PERCENTAGE'
+                                                        ? `${appliedCoupon.value}% off`
+                                                        : `$${appliedCoupon.value} off`}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={removeCoupon}
+                                                className="text-emerald-500 hover:text-red-500 transition-colors text-xs font-black uppercase"
+                                            >Remove</button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">
+                                                Coupon Code
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={couponInput}
+                                                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                                                    placeholder="Enter code..."
+                                                    className="flex-1 px-4 py-3 bg-[#F9F7F2] rounded-xl text-[#003B4A] font-bold text-sm focus:outline-none focus:ring-2 focus:ring-[#003B4A]/20"
+                                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), applyCoupon(couponInput))}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    disabled={isCouponLoading || !couponInput.trim()}
+                                                    onClick={() => applyCoupon(couponInput)}
+                                                    className="px-4 py-3 bg-[#003B4A] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-40"
+                                                >
+                                                    {isCouponLoading ? '...' : 'Apply'}
+                                                </button>
+                                            </div>
+                                            {couponError && (
+                                                <p className="text-red-500 text-xs font-bold">{couponError}</p>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <button

@@ -146,9 +146,9 @@ export default function LoginContent() {
                                 </div>
                                 <span className="ml-3 text-sm font-bold text-gray-500 group-hover:text-[#003B4A] transition-colors">{t.remember_me}</span>
                             </label>
-                            <a href="#" className="text-sm font-bold text-[#003B4A] hover:opacity-70 transition-opacity">
+                            <Link href="/forgot-password" title="reset password link" className="text-sm font-bold text-[#003B4A] hover:opacity-70 transition-opacity">
                                 {t.forgot_password}
-                            </a>
+                            </Link>
                         </div>
 
                         <button

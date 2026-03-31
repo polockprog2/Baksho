@@ -64,10 +64,10 @@ export const UserProvider = ({ children }) => {
             const response = await registerUserApi(userData);
 
             if (response.success || response.user) {
-                // Automatically log in after registration
-                return await login(userData.email, userData.password);
+                // We no longer automatically log in. User must verify email first.
+                return { success: true, user: response.user };
             }
-            return { success: false, error: 'Registration succeeded but login failed.' };
+            return { success: false, error: response.error || 'Registration failed.' };
         } catch (error) {
             console.error('Registration error:', error);
             return { success: false, error: error.message || 'Registration failed.' };

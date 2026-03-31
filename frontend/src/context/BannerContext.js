@@ -1,13 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { initialBanners } from '@/data/banners';
+// import { initialBanners } from '@/data/banners'; // Removed static data dependency
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const BannerContext = createContext();
 
 export function BannerProvider({ children }) {
-    const [banners, setBanners] = useState(initialBanners);
+    const [banners, setBanners] = useState([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load banners from API

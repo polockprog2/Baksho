@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
+import { validateCoupon } from '@/api/coupon.api';
 
 // Create Cart Context
 const CartContext = createContext();
@@ -22,8 +23,14 @@ export const CartProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
+    // Coupon state
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [couponError, setCouponError] = useState(null);
+    const [isCouponLoading, setIsCouponLoading] = useState(false);
+
     // Determine storage key based on user ID
     const cartKey = user?.id ? `cart_${user.id}` : 'cart_guest';
+    const couponKey = user?.id ? `coupon_${user.id}` : 'coupon_guest';
 
     // Load cart from localStorage whenever the user (and thus the key) changes
     useEffect(() => {
@@ -43,14 +50,25 @@ export const CartProvider = ({ children }) => {
                 setCartItems([]);
             }
         } else {
-            // If no saved cart for this user/guest, reset to empty
             setCartItems([]);
         }
 
-        setIsLoading(false);
-    }, [cartKey]);
+        // Also restore coupon
+        const savedCoupon = localStorage.getItem(couponKey);
+        if (savedCoupon) {
+            try {
+                setAppliedCoupon(JSON.parse(savedCoupon));
+            } catch {
+                setAppliedCoupon(null);
+            }
+        } else {
+            setAppliedCoupon(null);
+        }
 
-    // Save cart to localStorage whenever it items or the user changes
+        setIsLoading(false);
+    }, [cartKey, couponKey]);
+
+    // Save cart to localStorage whenever items or the user changes
     useEffect(() => {
         if (!isLoading && typeof window !== 'undefined') {
             try {
@@ -64,6 +82,16 @@ export const CartProvider = ({ children }) => {
         }
     }, [cartItems, cartKey, isLoading]);
 
+    // Save coupon to localStorage
+    useEffect(() => {
+        if (!isLoading && typeof window !== 'undefined') {
+            if (appliedCoupon) {
+                localStorage.setItem(couponKey, JSON.stringify(appliedCoupon));
+            } else {
+                localStorage.removeItem(couponKey);
+            }
+        }
+    }, [appliedCoupon, couponKey, isLoading]);
 
     // Add item to cart
     const addToCart = (product, quantity = 1) => {
@@ -71,18 +99,15 @@ export const CartProvider = ({ children }) => {
             const existingItem = prevItems.find(item => item.variantId === product.variantId);
 
             if (existingItem) {
-                // Update quantity if item already exists
                 return prevItems.map(item =>
                     item.variantId === product.variantId
                         ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
             } else {
-                // Add new item
                 return [...prevItems, { ...product, quantity }];
             }
         });
-        // Auto-open cart drawer when adding item
         setIsCartOpen(true);
     };
 
@@ -106,9 +131,9 @@ export const CartProvider = ({ children }) => {
     };
 
     // Clear entire cart
-    // In production, this would call: DELETE /api/cart
     const clearCart = () => {
         setCartItems([]);
+        setAppliedCoupon(null);
     };
 
     const toggleCart = () => setIsCartOpen(!isCartOpen);
@@ -128,16 +153,69 @@ export const CartProvider = ({ children }) => {
         return getCartTotal();
     };
 
+    // Calculate coupon discount
+    const getCouponDiscount = () => {
+        if (!appliedCoupon) return 0;
+        const subtotal = getCartSubtotal();
+
+        if (appliedCoupon.type === 'PERCENTAGE') {
+            const discount = subtotal * (appliedCoupon.value / 100);
+            return appliedCoupon.maxDiscount
+                ? Math.min(discount, appliedCoupon.maxDiscount)
+                : discount;
+        } else if (appliedCoupon.type === 'FIXED') {
+            return Math.min(appliedCoupon.value, subtotal);
+        }
+
+        return 0;
+    };
+
     const getCartTax = () => {
-        return getCartTotal() * 0.08; // 8% tax
+        const taxable = getCartSubtotal() - getCouponDiscount();
+        return Math.max(0, taxable) * 0.08;
     };
 
     const getDeliveryFee = () => {
-        return getCartTotal() > 50 ? 0 : 4.99; // Free delivery over $50
+        const afterDiscount = getCartSubtotal() - getCouponDiscount();
+        return afterDiscount > 50 ? 0 : 4.99;
     };
 
     const getCartGrandTotal = () => {
-        return getCartSubtotal() + getCartTax() + getDeliveryFee();
+        return Math.max(0, getCartSubtotal() - getCouponDiscount()) + getCartTax() + getDeliveryFee();
+    };
+
+    // Apply coupon code
+    const applyCoupon = async (code) => {
+        if (!code?.trim()) {
+            setCouponError('Please enter a coupon code.');
+            return false;
+        }
+
+        const subtotal = getCartSubtotal();
+        setIsCouponLoading(true);
+        setCouponError(null);
+
+        try {
+            const coupon = await validateCoupon(code.trim().toUpperCase());
+
+            if (coupon.minOrder && subtotal < coupon.minOrder) {
+                setCouponError(`This coupon requires a minimum order of $${coupon.minOrder.toFixed(2)}.`);
+                return false;
+            }
+
+            setAppliedCoupon(coupon);
+            return true;
+        } catch (err) {
+            setCouponError(err.message || 'Invalid coupon code.');
+            return false;
+        } finally {
+            setIsCouponLoading(false);
+        }
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponError(null);
     };
 
     const value = {
@@ -149,6 +227,7 @@ export const CartProvider = ({ children }) => {
         getCartTotal,
         getCartCount,
         getCartSubtotal,
+        getCouponDiscount,
         getCartTax,
         getDeliveryFee,
         getCartGrandTotal,
@@ -156,7 +235,13 @@ export const CartProvider = ({ children }) => {
         isCartOpen,
         toggleCart,
         openCart,
-        closeCart
+        closeCart,
+        // Coupon
+        appliedCoupon,
+        couponError,
+        isCouponLoading,
+        applyCoupon,
+        removeCoupon,
     };
 
     return (

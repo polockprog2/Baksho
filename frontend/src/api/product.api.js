@@ -89,3 +89,21 @@ export const bulkUploadProducts = async (file) => {
     });
 };
 
+// ===== REVIEW APIs =====
+
+export const getProductReviews = async (productId, page = 1, limit = 5) => {
+    return await apiClient(`reviews?productId=${productId}&page=${page}&limit=${limit}`);
+};
+
+export const createReview = async (reviewData) => {
+    return await apiClient('reviews', {
+        method: 'POST',
+        body: reviewData
+    });
+};
+
+export const deleteReview = async (reviewId) => {
+    return await apiClient(`reviews?id=${reviewId}`, {
+        method: 'DELETE'
+    });
+};

@@ -11,6 +11,7 @@ import BannerSection from '@/components/BannerSection';
 import CategoryProductSection from '@/components/CategoryProductSection';
 import FloatingSupport from '@/components/FloatingSupport';
 import { getProducts, getCategories } from '@/api/product.api';
+import { getHomepageSettings } from '@/api/settings.api';
 import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
@@ -38,7 +39,7 @@ export default function Home() {
           getProducts({ sort: 'newest', limit: 8 }),
           getProducts({ discount: 'true', limit: 20 }), // Fetch more to filter
           getCategories(),
-          fetch('/api/settings/homepage').then(res => res.json()).catch(() => ({}))
+          getHomepageSettings()
         ]);
 
         setFeaturedProducts((featuredRes.data || featuredRes).map(flattenProduct));

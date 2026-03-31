@@ -84,7 +84,8 @@ export default function RegisterPage() {
         });
 
         if (result.success) {
-            router.push('/');
+            setIsRegistered(true);
+            window.scrollTo(0, 0);
         } else {
             setErrors({ general: result.error });
         }
@@ -106,17 +107,34 @@ export default function RegisterPage() {
 
                 {/* Main Card */}
                 <div className="bg-white rounded-3xl p-8 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100/50">
-                    <div className="mb-8">
-                        <h1 className="text-2xl font-black text-[#003B4A] mb-2">{t.create_account}</h1>
-                        <p className="text-gray-500 text-sm font-medium">Join our community for the best shopping experience.</p>
-                    </div>
-
-                    {/* Error Message */}
-                    {errors.general && (
-                        <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
-                            <p className="text-sm text-red-600 font-semibold">{errors.general}</p>
+                    {/* Success Message */}
+                    {isRegistered ? (
+                        <div className="text-center py-8">
+                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-bounce">
+                                ✅
+                            </div>
+                            <h2 className="text-2xl font-black text-[#003B4A] mb-4">Check Your Email!</h2>
+                            <p className="text-gray-500 font-medium mb-8 leading-relaxed">
+                                We've sent a verification link to <span className="text-[#003B4A] font-bold">{formData.email}</span>. 
+                                Please click the link to activate your account.
+                            </p>
+                            <Link href="/login" className="inline-block bg-[#003B4A] text-white font-black px-10 py-4 rounded-2xl hover:bg-[#003B4A]/90 transition-all shadow-xl active:scale-95">
+                                Go to Login
+                            </Link>
                         </div>
-                    )}
+                    ) : (
+                        <>
+                        <div className="mb-8">
+                            <h1 className="text-2xl font-black text-[#003B4A] mb-2">{t.create_account}</h1>
+                            <p className="text-gray-500 text-sm font-medium">Join our community for the best shopping experience.</p>
+                        </div>
+
+                        {/* Error Message */}
+                        {errors.general && (
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
+                                <p className="text-sm text-red-600 font-semibold">{errors.general}</p>
+                            </div>
+                        )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -243,6 +261,8 @@ export default function RegisterPage() {
                             {t.sign_in}
                         </Link>
                     </p>
+                    </>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useUser } from './UserContext';
+import { getWishlist, addToWishlistApi, removeFromWishlistApi } from '@/api/wishlist.api';
 
 const WishlistContext = createContext();
 
@@ -13,66 +15,100 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
-    const [wishlistItems, setWishlistItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user } = useUser();
+    const [wishlistItems, setWishlistItems] = useState([]); // array of product-like objects
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Load wishlist from localStorage on mount
+    const LOCAL_KEY = 'wishlist_guest';
+
+    // Load wishlist: from backend for logged-in users, localStorage for guests
     useEffect(() => {
-        if (typeof window === 'undefined') {
-            setIsLoading(false);
-            return;
-        }
-        const saved = localStorage.getItem('wishlist');
-        if (saved) {
-            try {
-                setWishlistItems(JSON.parse(saved));
-            } catch (error) {
-                console.error('Error loading wishlist:', error);
+        const loadWishlist = async () => {
+            if (user?.id) {
+                setIsLoading(true);
+                try {
+                    const data = await getWishlist();
+                    // items from API are { id, wishlistId, productId, createdAt }
+                    // Convert them to a simpler structure with productId
+                    const ids = (data.items || []).map(item => ({ id: item.productId }));
+                    setWishlistItems(ids);
+                } catch {
+                    setWishlistItems([]);
+                } finally {
+                    setIsLoading(false);
+                }
+            } else {
+                // Guest: load from localStorage
+                try {
+                    const saved = localStorage.getItem(LOCAL_KEY);
+                    setWishlistItems(saved ? JSON.parse(saved) : []);
+                } catch {
+                    setWishlistItems([]);
+                }
             }
-        }
-        setIsLoading(false);
-    }, []);
+        };
+        loadWishlist();
+    }, [user?.id]);
 
-    // Save wishlist to localStorage on change
+    // Persist guest wishlist to localStorage
     useEffect(() => {
-        if (!isLoading && typeof window !== 'undefined') {
-            localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
+        if (!user?.id && typeof window !== 'undefined') {
+            localStorage.setItem(LOCAL_KEY, JSON.stringify(wishlistItems));
         }
-    }, [wishlistItems, isLoading]);
-
-    const addToWishlist = (product) => {
-        setWishlistItems(prev => {
-            if (prev.find(item => item.id === product.id)) return prev;
-            return [...prev, product];
-        });
-    };
-
-    const removeFromWishlist = (productId) => {
-        setWishlistItems(prev => prev.filter(item => item.id !== productId));
-    };
-
-    const toggleWishlist = (product) => {
-        if (wishlistItems.find(item => item.id === product.id)) {
-            removeFromWishlist(product.id);
-        } else {
-            addToWishlist(product);
-        }
-    };
+    }, [wishlistItems, user?.id]);
 
     const isInWishlist = (productId) => {
-        return wishlistItems.some(item => item.id === productId);
+        return wishlistItems.some(item => item.id === productId || item.productId === productId);
+    };
+
+    const addToWishlist = async (product) => {
+        // Optimistic update
+        setWishlistItems(prev => {
+            if (isInWishlist(product.id)) return prev;
+            return [...prev, { id: product.id, ...product }];
+        });
+
+        if (user?.id) {
+            try {
+                await addToWishlistApi(product.id);
+            } catch {
+                // Revert on error
+                setWishlistItems(prev => prev.filter(item => (item.id || item.productId) !== product.id));
+            }
+        }
+    };
+
+    const removeFromWishlist = async (productId) => {
+        // Optimistic update
+        setWishlistItems(prev => prev.filter(item => (item.id || item.productId) !== productId));
+
+        if (user?.id) {
+            try {
+                await removeFromWishlistApi(productId);
+            } catch {
+                // Could revert here, but we keep it simple
+            }
+        }
+    };
+
+    const toggleWishlist = async (product) => {
+        if (isInWishlist(product.id)) {
+            await removeFromWishlist(product.id);
+        } else {
+            await addToWishlist(product);
+        }
     };
 
     const getWishlistCount = () => wishlistItems.length;
 
     const value = {
         wishlistItems,
+        isLoading,
+        isInWishlist,
         addToWishlist,
         removeFromWishlist,
         toggleWishlist,
-        isInWishlist,
         getWishlistCount,
-        isLoading,
     };
 
     return (

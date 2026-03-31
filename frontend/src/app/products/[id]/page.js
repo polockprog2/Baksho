@@ -7,6 +7,8 @@ import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
+import ReviewList from '@/components/ReviewList';
+import ReviewForm from '@/components/ReviewForm';
 import { useCart } from '@/context/CartContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
@@ -27,6 +29,7 @@ export default function ProductDetailPage() {
     const [error, setError] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
     const [selectedVariant, setSelectedVariant] = useState(null);
+    const [reviewRefreshKey, setReviewRefreshKey] = useState(0);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -277,6 +280,27 @@ export default function ProductDetailPage() {
                         </div>
                     </div>
                 )}
+
+                {/* Reviews Section */}
+                <div className="mt-20 animate-fade-in-up">
+                    <h2 className="text-3xl font-black text-[#003B4A] uppercase tracking-wider mb-10">Customer Reviews</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* Review Form */}
+                        <div className="lg:col-span-1">
+                            <ReviewForm
+                                productId={product.id}
+                                onReviewSubmitted={() => setReviewRefreshKey(k => k + 1)}
+                            />
+                        </div>
+                        {/* Review List */}
+                        <div className="lg:col-span-2">
+                            <ReviewList
+                                productId={product.id}
+                                refreshKey={reviewRefreshKey}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

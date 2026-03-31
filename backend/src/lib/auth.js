@@ -27,6 +27,12 @@ export const authOptions = {
                     throw new Error("User not found");
                 }
 
+                // Note: We could add a check for user.emailVerified here
+                // if we wanted to block unverified users from logging in.
+                // if (!user.emailVerified) {
+                //     throw new Error("Please verify your email to log in");
+                // }
+
                 const isPasswordCorrect = await bcrypt.compare(
                     credentials.password,
                     user.password
