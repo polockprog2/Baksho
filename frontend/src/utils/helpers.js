@@ -151,15 +151,15 @@ export const flattenProduct = (product) => {
 
     return {
         ...product,
-        price,
-        originalPrice,
-        discount,
-        stock: mainVariant.stock || 0,
-        inStock: (mainVariant.stock || 0) > 0,
+        price: price || product.price,
+        originalPrice: originalPrice || product.originalPrice,
+        discount: discount || product.discount,
+        stock: mainVariant.stock !== undefined ? mainVariant.stock : (product.stock || 0),
+        inStock: mainVariant.stock !== undefined ? mainVariant.stock > 0 : (product.inStock || false),
         image: mainImage,
-        variantId: mainVariant.id || null,
-        variantName: mainVariant.name || null,
-        totalVariants: product.variants?.length || 0
+        variantId: mainVariant.id || product.variantId || null,
+        variantName: mainVariant.name || product.variantName || null,
+        totalVariants: product.variants?.length || product.totalVariants || 0
     };
 };
 

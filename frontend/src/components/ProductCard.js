@@ -23,17 +23,27 @@ export default function ProductCard({ product, badgeType = null }) {
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
+
         const mainVariant = product.variants?.[0];
-        if (!mainVariant) return;
+
+        // Robust cart data selection
+        const cartData = {
+            ...product,
+            variantId: mainVariant?.id || product.variantId,
+            price: mainVariant?.price || product.price,
+            name: mainVariant
+                ? `${product.name} (${mainVariant.name})`
+                : (product.variantName ? `${product.name} (${product.variantName})` : product.name),
+            image: product.images?.[0]?.imageUrl || product.image
+        };
+
+        if (!cartData.variantId) {
+            console.warn('Could not add product to cart: No variant ID found.', product);
+            return;
+        }
 
         setIsAdding(true);
-        addToCart({
-            ...product,
-            variantId: mainVariant.id,
-            price: mainVariant.price,
-            name: `${product.name} (${mainVariant.name})`,
-            image: product.images?.[0]?.imageUrl || product.image
-        }, 1);
+        addToCart(cartData, 1);
         setTimeout(() => setIsAdding(false), 1200);
     };
 

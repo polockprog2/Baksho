@@ -239,7 +239,7 @@ export default function Home() {
       {/* 8. FEATURED PRODUCTS - PREMIUM LAYOUT */}
       <section className="relative z-10 py-32 bg-white overflow-hidden">
         {/* Background Elements */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-10 z-0">
           <div className="absolute top-0 -right-40 w-96 h-96 bg-gradient-to-br from-green-200/30 via-emerald-200/20 to-transparent rounded-full blur-3xl animate-blob"></div>
           <div className="absolute bottom-0 -left-20 w-64 h-64 bg-gradient-to-tr from-blue-200/20 to-transparent rounded-full blur-3xl animate-blob animation-delay-4000"></div>
         </div>
@@ -311,7 +311,7 @@ export default function Home() {
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <div className="group relative">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 blur transition-opacity duration-500 rounded-2xl"></div>
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-20 blur transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
                         <ProductCard product={product} />
                       </div>
                     </div>
