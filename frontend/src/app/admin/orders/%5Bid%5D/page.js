@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getOrderById, updateOrderStatus } from '@/api/order.api';
 import { formatPrice } from '@/utils/helpers';
 import Link from 'next/link';
+import Image from 'next/image';
 
 /**
  * Enterprise Order Details View
@@ -134,7 +135,13 @@ export default function OrderDetailsPage({ params }) {
                                 <div key={item.id} className="p-8 flex items-center gap-6 group">
                                     <div className="w-20 h-20 bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex-shrink-0 group-hover:shadow-md transition-shadow">
                                         {item.product?.image ? (
-                                            <img src={item.product.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                            <Image 
+                                                src={item.product.image || '/placeholder-product.png'} 
+                                                alt={item.name} 
+                                                width={80} 
+                                                height={80} 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                            />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
                                         )}

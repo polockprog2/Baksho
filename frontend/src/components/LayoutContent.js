@@ -19,10 +19,12 @@ export default function LayoutContent({ children }) {
     const { user } = useUser();
 
     // Close cart drawer on logout
+    const prevUserRef = React.useRef(user);
     React.useEffect(() => {
-        if (!user) {
+        if (prevUserRef.current && !user) {
             closeCart();
         }
+        prevUserRef.current = user;
     }, [user, closeCart]);
 
     return (

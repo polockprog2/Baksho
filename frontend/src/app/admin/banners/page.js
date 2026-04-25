@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useBanners } from '@/context/BannerContext';
 
 export default function AdminBanners() {
@@ -71,7 +72,7 @@ export default function AdminBanners() {
                 {banners.map((banner) => (
                     <div key={banner.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 group hover:shadow-md transition-all">
                         <div className="h-40 relative">
-                            <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover" />
+                            <Image src={banner.imageUrl || '/placeholder-banner.png'} alt={banner.title} fill className="object-cover" />
                             <div className="absolute top-3 right-3 flex gap-2">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${banner.active ? 'bg-green-500 text-white' : 'bg-slate-500 text-white'
                                     }`}>

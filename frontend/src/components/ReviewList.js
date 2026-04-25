@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { getProductReviews } from '@/api/product.api';
 
 function StarRating({ rating, interactive = false, onRate }) {
@@ -46,9 +47,11 @@ function ReviewCard({ review }) {
             <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#003B4A] rounded-full flex items-center justify-center text-white text-xs font-black">
                     {review.user?.image ? (
-                        <img
+                        <Image
                             src={review.user.image}
                             alt={review.user.name}
+                            width={40}
+                            height={40}
                             className="w-10 h-10 rounded-full object-cover"
                         />
                     ) : initials}

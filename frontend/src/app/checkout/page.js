@@ -394,9 +394,10 @@ export default function CheckoutPage() {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#003B4A] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#003B4A]/90 transition-all shadow-xl shadow-[#003B4A]/20 active:scale-95"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-[#003B4A] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#003B4A]/90 transition-all shadow-xl shadow-[#003B4A]/20 active:scale-95 disabled:opacity-50 disabled:scale-100"
                                 >
-                                    {t.place_order}
+                                    {isSubmitting ? 'Processing...' : t.place_order}
                                 </button>
                             </div>
                         </div>

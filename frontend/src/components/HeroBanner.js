@@ -6,126 +6,214 @@ import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
 
 /**
- * HeroBanner Component - Baksho Style
- * Large hero banner with featured product/sale and CTA button
+ * HeroBanner Component - Grocero Style
+ * Premium grocery store hero with gradient background, glassmorphism,
+ * micro-animations, and refined typography
  */
 export default function HeroBanner({ content }) {
     const { language } = useLanguage();
     const t = translations[language] || translations.EN;
 
-    const displayTitle = content?.hero_title || t.hero_title;
-    const displayDesc = content?.hero_desc || t.hero_desc;
-    const displayCTA = content?.hero_cta || t.shop_now;
+    const displayTitle = content?.hero_title || "Your One-Stop Shop for Organic Products";
+    const displayDesc = content?.hero_desc || "Fresh. Halal. Delivered to Your Door — We care about what goes into your kitchen for your better life and better health.";
+    const displayCTA = content?.hero_cta || t.shop_now || "Shop Now";
     const displayImage = content?.hero_image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200";
-    // const displayBadge = content?.hero_badge || t.cat_weekly_deals || "Weekly Deals";
-    const displayRatingText = content?.hero_rating_text || "4.9/5.0 Store";
-    const displayDiscountText = content?.hero_discount_text || "Up to 45% OFF";
+    const displayBadgeText = content?.hero_badge_text || "The best offline grocery store in Sylhet";
+    const displayRating = content?.hero_rating || "4.8 Ratings";
+    const displayTrustText = content?.hero_trust_text || "Trusted by 12k+ Customers";
+
+    const titleParts = displayTitle.split("for ");
+    const titleBefore = titleParts[0];
+    const highlightWord = titleParts.length > 1 ? titleParts[1] : "";
 
     return (
-        <section className="relative bg-[#F9F7F2] overflow-hidden">
-            {/* Dynamic Mesh Backgrounds */}
-            <div className="absolute top-0 right-0 w-2/3 h-full bg-green-50/40 -skew-x-12 transform origin-top-right transition-all duration-[3000ms] blur-3xl rounded-full translate-x-1/4 -translate-y-1/4 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-blue-50/30 skew-x-12 transform origin-bottom-left blur-3xl rounded-full -translate-x-1/4 translate-y-1/4 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <>
+            {/* ─── Hero Section ─── */}
+            <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 40%, #ecfdf5 70%, #f0fdf4 100%)' }}>
 
-            {/* Animated Grid Pattern */}
-            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+                {/* Decorative blobs */}
+                <div className="absolute top-[-120px] right-[-80px] w-[500px] h-[500px] rounded-full opacity-[0.08] animate-blob" style={{ background: 'radial-gradient(circle, #10b981, transparent)' }} />
+                <div className="absolute bottom-[-100px] left-[-60px] w-[400px] h-[400px] rounded-full opacity-[0.06] animate-blob animation-delay-2000" style={{ background: 'radial-gradient(circle, #059669, transparent)' }} />
+                <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full opacity-[0.04] animate-blob animation-delay-4000" style={{ background: 'radial-gradient(circle, #34d399, transparent)' }} />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                    {/* Left Content */}
-                    <div className="flex flex-col">
-                        {/*  <div className="inline-flex items-center gap-2 bg-green-50 px-5 py-2.5 rounded-2xl text-[10px] font-black text-green-700 mb-8 border border-green-100 shadow-sm uppercase tracking-widest animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                            <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                            {displayBadge}
-                        </div>*/}
+                <div className="max-w-7xl mx-auto px-5 sm:px-8 pt-12 pb-6 md:pt-20 md:pb-10 lg:pt-16 lg:pb-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-4 items-center">
 
-                        <h1 className="text-6xl md:text-8xl font-black text-[#003B4A] mb-8 leading-[0.95] tracking-tighter drop-shadow-sm">
-                            {displayTitle.split(' ').map((word, i) => (
-                                <span
-                                    key={i}
-                                    className="inline-block animate-fade-in-up hover:text-green-600 transition-colors duration-300"
-                                    style={{ animationDelay: `${400 + i * 100}ms` }}
-                                >
-                                    {word}{' '}
+                        {/* ── Left Column ── */}
+                        <div className="flex flex-col justify-center animate-fade-in-up order-2 lg:order-1">
+
+                            {/* Badge pill — glassmorphism */}
+                            <div
+                                className="inline-flex items-center gap-2.5 rounded-full px-4 py-2 mb-7 w-fit animate-fade-in border border-emerald-200/60"
+                                style={{
+                                    background: 'rgba(255,255,255,0.55)',
+                                    backdropFilter: 'blur(12px)',
+                                    WebkitBackdropFilter: 'blur(12px)',
+                                }}
+                            >
+                                <span className="w-6 h-6 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                                    <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
                                 </span>
-                            ))}
-                            <span className="text-green-600 animate-pulse">.</span>
-                        </h1>
+                                <span className="text-[13px] font-semibold text-emerald-800 tracking-wide">{displayBadgeText}</span>
+                            </div>
 
-                        <p className="text-xl md:text-2xl text-slate-500 mb-12 max-w-lg leading-relaxed font-medium animate-fade-in-up" style={{ animationDelay: '800ms' }}>
-                            {displayDesc}
-                        </p>
+                            {/* Headline */}
+                            <h1 className="text-[2.5rem] sm:text-5xl md:text-[3.5rem] lg:text-[3.75rem] font-extrabold text-gray-900 leading-[1.08] mb-5 tracking-[-0.02em]">
+                                {titleBefore && (
+                                    <span>{titleBefore}</span>
+                                )}
+                                {highlightWord && (
+                                    <>
+                                        <br />
+                                        <span className="text-gray-900">for </span>
+                                        <span
+                                            className="bg-clip-text text-transparent"
+                                            style={{ backgroundImage: 'linear-gradient(135deg, #059669, #10b981, #047857)' }}
+                                        >
+                                            {highlightWord}
+                                        </span>
+                                    </>
+                                )}
+                            </h1>
 
-                        <div className="flex flex-wrap gap-6 animate-fade-in-up" style={{ animationDelay: '1000ms' }}>
-                            <Link
-                                href="/products"
-                                className="group relative px-12 py-5 bg-green-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-green-200/50 hover:bg-green-700 transition-all transform hover:-translate-y-2 active:scale-95 overflow-hidden"
-                            >
-                                <span className="relative z-10 uppercase tracking-widest">{displayCTA}</span>
-                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                            </Link>
-                            <Link
-                                href="/categories"
-                                className="px-12 py-5 bg-white text-[#003B4A] border-2 border-gray-100 rounded-2xl font-black text-lg hover:border-green-600 hover:text-green-600 transition-all transform hover:-translate-y-2 active:scale-95 shadow-xl shadow-gray-200/20"
-                            >
-                                <span className="uppercase tracking-widest">{t.view_categories}</span>
-                            </Link>
-                        </div>
+                            {/* Description */}
+                            <p className="text-gray-500 text-[15px] sm:text-base leading-relaxed mb-9 max-w-[440px]">
+                                {displayDesc}
+                            </p>
 
-                        {/* Trust Metrics with Floating Effect */}
-                        <div className="mt-16 flex items-center gap-10">
-                            {[
-                                { label: 'Active Users', value: '50k+', icon: '👥' },
-                                { label: 'Fresh Products', value: '10k+', icon: '🥗' }
-                            ].map((stat, i) => (
-                                <div key={i} className="flex flex-col animate-fade-in-up" style={{ animationDelay: `${1200 + i * 100}ms` }}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-lg opacity-80">{stat.icon}</span>
-                                        <span className="text-3xl font-black text-[#003B4A] tracking-tighter">{stat.value}</span>
+                            {/* CTAs */}
+                            <div className="flex flex-wrap items-center gap-4 sm:gap-5 mb-10">
+                                <Link
+                                    href="/products"
+                                    className="group relative px-8 py-3.5 bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-700 text-white rounded-full font-bold text-sm tracking-wide transition-all duration-300 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0"
+                                >
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        {displayCTA}
+                                        <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                        </svg>
+                                    </span>
+                                </Link>
+                                <Link
+                                    href="/products"
+                                    className="group text-emerald-700 font-semibold text-sm flex items-center gap-1.5 hover:text-emerald-900 transition-colors"
+                                >
+                                    View All Products
+                                    <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </Link>
+                            </div>
+
+                            {/* Rating / trust row */}
+                            <div className="flex items-center gap-4 animate-fade-in animate-delay-300">
+                                {/* Avatar stack */}
+                                <div className="flex -space-x-2.5">
+                                    {[
+                                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face",
+                                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face",
+                                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face",
+                                    ].map((src, i) => (
+                                        <div
+                                            key={i}
+                                            className="w-10 h-10 rounded-full border-[2.5px] border-white overflow-hidden relative shadow-sm"
+                                        >
+                                            <Image src={src} alt="Customer" fill className="object-cover" sizes="40px" />
+                                        </div>
+                                    ))}
+                                    {/* "+X more" circle */}
+                                    <div className="w-10 h-10 rounded-full border-[2.5px] border-white bg-emerald-50 flex items-center justify-center shadow-sm">
+                                        <span className="text-[11px] font-bold text-emerald-700">+9k</span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">{stat.label}</span>
                                 </div>
-                            ))}
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-1.5">
+                                        {/* Star icon */}
+                                        <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <p className="text-sm font-extrabold text-gray-900">{displayRating}</p>
+                                    </div>
+                                    <p className="text-xs text-gray-400 font-medium">{displayTrustText}</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Right Image Section - More Dynamic */}
-                    <div className="relative group perspective-1000 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                        <div className="relative aspect-square md:aspect-auto md:h-[600px] rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] z-20 group-hover:rotate-1 transition-transform duration-1000">
-                            <Image
-                                src={displayImage}
-                                alt="Hero Banner Background"
-                                fill
-                                priority
-                                className="object-cover scale-110 group-hover:scale-100 transition-transform duration-[4s] ease-out"
+                        {/* ── Right Column — Hero Image ── */}
+                        <div className="relative flex items-end justify-center order-1 lg:order-2 animate-fade-in animate-delay-200">
+                            {/* Glow behind image */}
+                            <div
+                                className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[80%] h-[60%] rounded-full blur-3xl opacity-20"
+                                style={{ background: 'radial-gradient(circle, #34d399, transparent)' }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#003B4A]/40 via-transparent to-white/10 group-hover:opacity-0 transition-opacity duration-1000"></div>
-                        </div>
 
-                        {/* Premium Floating Status Cards */}
-                        <div className="absolute -top-10 -right-10 bg-white/80 backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl z-30 flex items-center gap-4 animate-bounce-slow border border-white/50 border-t-white">
-                            <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 shadow-inner text-2xl">
-                                ⭐
+                            <div className="relative w-full max-w-[380px] md:max-w-[440px] lg:max-w-[480px] aspect-[3/4]">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1595475038784-bbe439ff41e6?auto=format&fit=crop&q=80&w=600"
+                                    alt="Farmer with fresh vegetables"
+                                    fill
+                                    priority
+                                    className="object-cover object-top rounded-3xl"
+                                    sizes="(max-width: 768px) 90vw, (max-width: 1024px) 50vw, 480px"
+                                />
+                                {/* Gradient overlay at bottom of image */}
+                                <div className="absolute inset-x-0 bottom-0 h-1/4 rounded-b-3xl" style={{ background: 'linear-gradient(to top, rgba(240,253,244,0.9), transparent)' }} />
                             </div>
-                            <div>
-                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Top Rated</p>
-                                <p className="text-xl font-black text-[#003B4A] leading-tight">{displayRatingText}</p>
-                            </div>
-                        </div>
 
-                        <div className="absolute -bottom-12 -left-12 bg-white p-8 rounded-[2.5rem] shadow-2xl z-30 flex items-center gap-5 animate-pulse-slow border border-gray-50">
-                            <div className="w-16 h-16 bg-green-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-green-200">
-                                %
+                            {/* Floating stat card — top right */}
+                            <div
+                                className="absolute top-8 right-0 md:right-4 lg:right-0 rounded-2xl px-4 py-3 shadow-xl border border-white/60 animate-bounce-slow hidden sm:flex items-center gap-3"
+                                style={{
+                                    background: 'rgba(255,255,255,0.75)',
+                                    backdropFilter: 'blur(16px)',
+                                    WebkitBackdropFilter: 'blur(16px)',
+                                }}
+                            >
+                                <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-md">
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p className="text-xs font-bold text-gray-800">100% Organic</p>
+                                    <p className="text-[10px] text-gray-400">Certified Fresh</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[11px] text-slate-400 font-black uppercase tracking-widest mb-1">Member Deals</p>
-                                <p className="text-2xl font-black text-gray-900 leading-tight tracking-tighter">{displayDiscountText}</p>
+
+                            {/* Floating stat card — bottom left */}
+                            <div
+                                className="absolute bottom-16 left-0 md:left-4 lg:left-[-20px] rounded-2xl px-4 py-3 shadow-xl border border-white/60 animate-bounce-slow animation-delay-2000 hidden sm:flex items-center gap-3"
+                                style={{
+                                    background: 'rgba(255,255,255,0.75)',
+                                    backdropFilter: 'blur(16px)',
+                                    WebkitBackdropFilter: 'blur(16px)',
+                                }}
+                            >
+                                <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </span>
+                                <div>
+                                    <p className="text-xs font-bold text-gray-800">Fast Delivery</p>
+                                    <p className="text-[10px] text-gray-400">Same day in Sylhet</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </section>
+                {/* ─── Categories strip ─── */}
+                <div className="border-t border-emerald-100/60 py-12 text-center" style={{ background: 'linear-gradient(180deg, rgba(240,253,244,0.5), rgba(255,255,255,1))' }}>
+                    <p className="text-[11px] font-semibold text-emerald-600/60 uppercase tracking-[0.2em] mb-1.5">Categories</p>
+                    <h2 className="text-3xl md:text-4xl font-extrabold">
+                        <span className="text-gray-900">Featured </span>
+                        <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #059669, #10b981)' }}>Categories</span>
+                    </h2>
+                </div>
+            </section>
+        </>
     );
 }

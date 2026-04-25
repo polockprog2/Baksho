@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -119,7 +120,13 @@ export default function CartDrawer() {
                             {cartItems.map((item, index) => (
                                 <div key={item.variantId || item.id || index} className="flex gap-4 group">
                                     <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100 p-1 group-hover:scale-105 transition-transform">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                        <Image 
+                                            src={item.image || '/placeholder-product.png'} 
+                                            alt={item.name} 
+                                            width={80} 
+                                            height={80} 
+                                            className="w-full h-full object-contain" 
+                                        />
                                     </div>
                                     <div className="flex-1 flex flex-col justify-between">
                                         <div className="flex justify-between items-start gap-2">

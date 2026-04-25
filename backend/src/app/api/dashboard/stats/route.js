@@ -1,7 +1,6 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { withAdminAuth } from '@/lib/withAuth';
 
 /**
  * Helper: calculate percentage change between two values
@@ -14,13 +13,8 @@ function calcTrend(current, previous) {
     return `${sign}${pct.toFixed(1)}%`;
 }
 
-export async function GET() {
+export const GET = withAdminAuth(async function GET(req) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
         // Date ranges for trend calculation
         const now = new Date();
         const thirtyDaysAgo = new Date(now);
@@ -184,4 +178,4 @@ export async function GET() {
         console.error('API Dashboard Stats Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useUser } from './UserContext';
 import { validateCoupon } from '@/api/coupon.api';
 
@@ -136,9 +136,9 @@ export const CartProvider = ({ children }) => {
         setAppliedCoupon(null);
     };
 
-    const toggleCart = () => setIsCartOpen(!isCartOpen);
-    const openCart = () => setIsCartOpen(true);
-    const closeCart = () => setIsCartOpen(false);
+    const toggleCart = useCallback(() => setIsCartOpen(prev => !prev), []);
+    const openCart = useCallback(() => setIsCartOpen(true), []);
+    const closeCart = useCallback(() => setIsCartOpen(false), []);
 
     // Calculate cart totals
     const getCartTotal = () => {

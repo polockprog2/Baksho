@@ -1,17 +1,12 @@
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { withAuth } from "@/lib/withAuth"
 import { handleApiError } from "@/lib/errorHandler"
 
 // GET /api/cart — Get current user's cart
-export async function GET() {
+export const GET = withAuth(async function GET(req) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
+        const session = req.session
         let cart = await prisma.cart.findUnique({
             where: { userId: session.user.id },
             include: {
@@ -56,16 +51,12 @@ export async function GET() {
     } catch (error) {
         return handleApiError(error, "Cart GET")
     }
-}
+})
 
 // POST /api/cart — Add item to cart
-export async function POST(req) {
+export const POST = withAuth(async function POST(req) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
+        const session = req.session
         const { variantId, quantity = 1 } = await req.json()
 
         if (!variantId) {
@@ -103,16 +94,12 @@ export async function POST(req) {
     } catch (error) {
         return handleApiError(error, "Cart POST")
     }
-}
+})
 
 // PATCH /api/cart — Update item quantity
-export async function PATCH(req) {
+export const PATCH = withAuth(async function PATCH(req) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
+        const session = req.session
         const { itemId, quantity } = await req.json()
 
         if (!itemId || quantity === undefined) {
@@ -133,16 +120,12 @@ export async function PATCH(req) {
     } catch (error) {
         return handleApiError(error, "Cart PATCH")
     }
-}
+})
 
 // DELETE /api/cart — Clear all items or remove specific item
-export async function DELETE(req) {
+export const DELETE = withAuth(async function DELETE(req) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-
+        const session = req.session
         const { searchParams } = new URL(req.url)
         const itemId = searchParams.get("itemId")
 
@@ -165,4 +148,4 @@ export async function DELETE(req) {
     } catch (error) {
         return handleApiError(error, "Cart DELETE")
     }
-}
+})

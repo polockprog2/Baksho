@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { searchProducts as searchProductsUtil } from '@/utils/helpers';
 import { getProducts } from '@/api/product.api';
 import { formatPrice } from '@/utils/helpers';
@@ -132,7 +133,13 @@ export default function SearchOverlay({ isOpen, onClose }) {
                                         className="flex items-center gap-4 p-4 rounded-3xl hover:bg-[#F9F7F2] transition-all group"
                                     >
                                         <div className="w-16 h-16 rounded-2xl bg-gray-50 p-2 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                            <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                                            <Image 
+                                                src={product.image || '/placeholder-product.png'} 
+                                                alt={product.name} 
+                                                width={64} 
+                                                height={64} 
+                                                className="w-full h-full object-contain" 
+                                            />
                                         </div>
                                         <div className="flex-1">
                                             <h4 className="font-bold text-[#003B4A] group-hover:text-green-600 transition-colors">{product.name}</h4>
