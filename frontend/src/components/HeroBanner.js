@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
+import GroceryHeroCharacter from '@/components/ui/GroceryHeroCharacter';
 
 /**
  * HeroBanner Component - Grocero Style
@@ -146,20 +147,15 @@ export default function HeroBanner({ content }) {
                             {/* Glow behind image */}
                             <div
                                 className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[80%] h-[60%] rounded-full blur-3xl opacity-20"
-                                style={{ background: 'radial-gradient(circle, #34d399, transparent)' }}
+                                style={{ background: 'radial-gradient(circle, #c3d334ff, transparent)' }}
                             />
 
-                            <div className="relative w-full max-w-[380px] md:max-w-[440px] lg:max-w-[480px] aspect-[3/4]">
-                                <Image
-                                    src="https://images.unsplash.com/photo-1595475038784-bbe439ff41e6?auto=format&fit=crop&q=80&w=600"
-                                    alt="Farmer with fresh vegetables"
-                                    fill
-                                    priority
-                                    className="object-cover object-top rounded-3xl"
-                                    sizes="(max-width: 768px) 90vw, (max-width: 1024px) 50vw, 480px"
-                                />
-                                {/* Gradient overlay at bottom of image */}
-                                <div className="absolute inset-x-0 bottom-0 h-1/4 rounded-b-3xl" style={{ background: 'linear-gradient(to top, rgba(240,253,244,0.9), transparent)' }} />
+                            <div className="relative w-full max-w-[420px] md:max-w-[500px] lg:max-w-[540px] aspect-square perspective-2000">
+                                <div className="relative w-full h-full preserve-3d">
+                                    <GroceryHeroCharacter />
+                                </div>
+                                {/* Gradient overlay at bottom of image - adjusted for illustration style */}
+                                <div className="absolute inset-x-0 bottom-[-20px] h-1/3 rounded-full opacity-40 blur-2xl" style={{ background: 'radial-gradient(circle, #34d399, transparent)' }} />
                             </div>
 
                             {/* Floating stat card — top right */}
