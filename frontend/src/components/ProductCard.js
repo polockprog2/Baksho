@@ -54,7 +54,8 @@ export default function ProductCard({ product, badgeType = null }) {
     };
 
     const mainVariant = product.variants?.[0] || {};
-    const mainImage = product.images?.[0]?.imageUrl || product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400';
+    const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect fill='%23f0fdf4' width='400' height='400'/%3E%3Ctext x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-size='64'%3E🛒%3C/text%3E%3Ctext x='50%25' y='60%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui' font-size='14' fill='%2386efac'%3ENo Image%3C/text%3E%3C/svg%3E";
+    const mainImage = product.images?.[0]?.imageUrl || product.image || PLACEHOLDER_IMG;
 
     const price = mainVariant.price || 0;
     const originalPrice = mainVariant.originalPrice || 0;
@@ -97,7 +98,7 @@ export default function ProductCard({ product, badgeType = null }) {
                             fill
                             className={`object-contain transition-transform duration-500 group-hover:scale-105 ${!inStock ? 'grayscale opacity-40' : ''}`}
                             sizes="(max-width: 768px) 50vw, 20vw"
-                            onError={() => setImgSrc('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400')}
+                            onError={() => setImgSrc(PLACEHOLDER_IMG)}
                         />
                     </div>
 

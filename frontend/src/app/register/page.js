@@ -24,6 +24,7 @@ export default function RegisterPage() {
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [isRegistered, setIsRegistered] = useState(false);
 
     const handleChange = (e) => {
         setFormData({

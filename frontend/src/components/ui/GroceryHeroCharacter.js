@@ -115,7 +115,7 @@ export default function GroceryHeroCharacter() {
                 <g className="gc-broc">
                     <rect x="171" y="356" width="8" height="22" rx="3" fill="#15803d" />
                     <circle cx="175" cy="345" r="16" fill="#16a34a" />
-                    <circle cx="162" cy="352" r="11" fill="#16a34a" />
+                    <circle cx="162" cy="352" r="11" fill="#1816a393" />
                     <circle cx="188" cy="352" r="11" fill="#16a34a" />
                     <circle cx="175" cy="335" r="10" fill="#22c55e" />
                     <circle cx="163" cy="344" r="7" fill="#22c55e" />

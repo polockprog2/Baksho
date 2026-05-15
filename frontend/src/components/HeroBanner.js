@@ -19,7 +19,7 @@ export default function HeroBanner({ content }) {
     const displayDesc = content?.hero_desc || "Fresh. Halal. Delivered to Your Door — We care about what goes into your kitchen for your better life and better health.";
     const displayCTA = content?.hero_cta || t.shop_now || "Shop Now";
     const displayImage = content?.hero_image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1200";
-    const displayBadgeText = content?.hero_badge_text || "The best offline grocery store in Sylhet";
+    const displayBadgeText = content?.hero_badge_text || "The best offline grocery store in Germany";
     const displayRating = content?.hero_rating || "4.8 Ratings";
     const displayTrustText = content?.hero_trust_text || "Trusted by 12k+ Customers";
 

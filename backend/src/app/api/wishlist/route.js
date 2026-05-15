@@ -25,6 +25,11 @@ export async function GET() {
         })
 
         if (!wishlist) {
+            // Verify user still exists (handles stale sessions after re-seed)
+            const userExists = await prisma.user.findUnique({ where: { id: session.user.id } })
+            if (!userExists) {
+                return NextResponse.json({ error: "User not found. Please log in again." }, { status: 401 })
+            }
             wishlist = await prisma.wishlist.create({
                 data: { userId: session.user.id },
                 include: { items: true }

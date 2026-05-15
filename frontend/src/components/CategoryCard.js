@@ -22,7 +22,7 @@ export default function CategoryCard({ category }) {
                         alt={category.name}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        onError={() => setImgSrc('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400')}
+                        onError={() => setImgSrc(null)}
                     />
                 ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center text-8xl group-hover:scale-110 transition-transform duration-700">
