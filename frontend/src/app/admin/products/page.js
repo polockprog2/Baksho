@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getProducts, updateProduct, deleteProduct, createProduct, bulkUploadProducts } from '@/api/product.api';
+import { getProducts, updateProduct, deleteProduct, createProduct, bulkUploadProducts, getCategories } from '@/api/product.api';
 import { toast } from 'react-hot-toast';
 import { formatPrice } from '@/utils/helpers';
 
@@ -17,6 +17,7 @@ export default function AdminProductsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({ category: '', sort: 'newest' });
+    const [categories, setCategories] = useState([]);
 
     // UI States
     const [showModal, setShowModal] = useState(false);
@@ -68,6 +69,18 @@ export default function AdminProductsPage() {
         return () => clearTimeout(timer);
     }, [fetchProducts]);
 
+    useEffect(() => {
+        const fetchCategoriesData = async () => {
+            try {
+                const data = await getCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
+            }
+        };
+        fetchCategoriesData();
+    }, []);
+
     // Handle deep links (add=true)
     useEffect(() => {
         if (searchParams.get('add') === 'true') {
@@ -77,15 +90,38 @@ export default function AdminProductsPage() {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        
+        // Find selected category ID
+        const selectedCat = categories.find(c => c.slug === formData.category) || categories[0];
+        
+        // Transform flat data to nested structure for the API
+        const payload = {
+            name: formData.name,
+            slug: formData.name.toLowerCase().replace(/\s+/g, '-'),
+            categoryId: selectedCat?.id,
+            description: editingProduct?.description || formData.name,
+            variants: [
+                {
+                    name: formData.unit,
+                    price: parseFloat(formData.price) || 0,
+                    originalPrice: formData.discount > 0 ? (parseFloat(formData.price) || 0) + (parseFloat(formData.discount) || 0) : undefined,
+                    stock: parseInt(formData.stock) || 0,
+                    sku: editingProduct?.variants?.[0]?.sku || `SKU-${Date.now()}`
+                }
+            ],
+            images: editingProduct?.images?.map(img => img.imageUrl) || ['https://images.pexels.com/photos/113338/pexels-photo-113338.jpeg']
+        };
+
         try {
             if (editingProduct) {
-                await updateProduct(editingProduct.id, formData);
+                await updateProduct(editingProduct.id, payload);
             } else {
-                await createProduct(formData);
+                await createProduct(payload);
             }
             setShowModal(false);
             fetchProducts(meta.page);
         } catch (error) {
+            console.error('Save error:', error);
             alert('Operation failed');
         }
     };
@@ -101,14 +137,16 @@ export default function AdminProductsPage() {
     };
 
     const openEditModal = (product) => {
+        const firstVariant = product.variants?.[0] || {};
         setEditingProduct(product);
         setFormData({
-            name: product.name,
-            category: product.category?.slug || product.category,
-            price: product.price,
-            discount: product.discount || 0,
-            inStock: product.inStock,
-            unit: product.unit
+            name: product.name || '',
+            category: product.category?.slug || product.category || '',
+            price: firstVariant.price || '',
+            discount: product.discount || firstVariant.originalPrice ? (firstVariant.originalPrice - firstVariant.price) : 0,
+            inStock: firstVariant.stock > 0,
+            unit: firstVariant.name || '',
+            stock: firstVariant.stock || 0
         });
         setShowModal(true);
     };
@@ -170,10 +208,9 @@ export default function AdminProductsPage() {
                     onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
                 >
                     <option value="">All Categories</option>
-                    <option value="vegetables">Vegetables</option>
-                    <option value="fruits">Fruits</option>
-                    <option value="meat-fish">Meat & Fish</option>
-                    <option value="dairy">Dairy</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                    ))}
                 </select>
                 <select
                     className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:outline-none"
@@ -322,10 +359,10 @@ export default function AdminProductsPage() {
                                         value={formData.category}
                                         onChange={e => setFormData(p => ({ ...p, category: e.target.value }))}
                                     >
-                                        <option value="vegetables">Vegetables</option>
-                                        <option value="fruits">Fruits</option>
-                                        <option value="meat-fish">Meat & Fish</option>
-                                        <option value="dairy">Dairy</option>
+                                        <option value="">Select Category</option>
+                                        {categories.map(cat => (
+                                            <option key={cat.id} value={cat.slug}>{cat.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -345,7 +382,7 @@ export default function AdminProductsPage() {
                                         required
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"
                                         value={formData.price}
-                                        onChange={e => setFormData(p => ({ ...p, price: parseFloat(e.target.value) }))}
+                                        onChange={e => setFormData(p => ({ ...p, price: e.target.value }))}
                                     />
                                 </div>
                                 <div>
@@ -354,7 +391,7 @@ export default function AdminProductsPage() {
                                         type="number"
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none"
                                         value={formData.discount}
-                                        onChange={e => setFormData(p => ({ ...p, discount: parseInt(e.target.value) }))}
+                                        onChange={e => setFormData(p => ({ ...p, discount: e.target.value }))}
                                     />
                                 </div>
                                 <div className="md:col-span-2 flex items-center gap-3">

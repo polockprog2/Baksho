@@ -16,3 +16,14 @@ export const updateHomepageSettings = async (settings) => {
     });
 };
 
+export const getGlobalSettings = async () => {
+    return await apiClient('settings');
+};
+
+export const updateGlobalSettings = async (settings) => {
+    return await apiClient('settings', {
+        method: 'PATCH',
+        body: settings
+    });
+};
+

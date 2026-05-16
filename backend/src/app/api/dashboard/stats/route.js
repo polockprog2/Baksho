@@ -33,10 +33,8 @@ export const GET = withAdminAuth(async function GET(req) {
             previousCustomers,
             // Overall stats
             totalOrders,
-            totalRevenueRes,
             totalCustomers,
             lowStockCount,
-            previousLowStock,
             // Recent data
             recentOrders,
             topVariantsRes
@@ -51,10 +49,8 @@ export const GET = withAdminAuth(async function GET(req) {
             prisma.user.count({ where: { role: 'CUSTOMER', createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } } }),
             // Overall totals
             prisma.order.count(),
-            prisma.order.aggregate({ _sum: { total: true } }),
             prisma.user.count({ where: { role: 'CUSTOMER' } }),
             prisma.productVariant.count({ where: { stock: { lt: 10 } } }),
-            prisma.productVariant.count({ where: { stock: { lt: 10, gte: 0 } } }),
             // Recent orders for the dashboard feed
             prisma.order.findMany({
                 take: 5,
@@ -73,7 +69,7 @@ export const GET = withAdminAuth(async function GET(req) {
             })
         ]);
 
-        const revenue = totalRevenueRes._sum.total || 0;
+        const revenue = totalOrders > 0 ? (await prisma.order.aggregate({ _sum: { total: true } }))._sum.total || 0 : 0;
         const currentRevenue = currentRevenueRes._sum.total || 0;
         const previousRevenue = previousRevenueRes._sum.total || 0;
 
@@ -81,8 +77,7 @@ export const GET = withAdminAuth(async function GET(req) {
         const ordersTrend = calcTrend(currentOrders, previousOrders);
         const revenueTrend = calcTrend(currentRevenue, previousRevenue);
         const customersTrend = calcTrend(currentCustomers, previousCustomers);
-        const stockDiff = lowStockCount - previousLowStock;
-        const stockTrend = stockDiff >= 0 ? `+${stockDiff}` : `${stockDiff}`;
+        const stockTrend = "0"; // Stock trend requires historical snapshots which aren't available yet
 
         // Format top products with additional info including revenue
         const topProducts = await Promise.all(topVariantsRes.map(async (item) => {
@@ -97,18 +92,19 @@ export const GET = withAdminAuth(async function GET(req) {
                 }
             });
 
-            // Calculate revenue for this specific variant
-            const variantRevenueRes = await prisma.orderItem.aggregate({
-                _sum: { total: true },
-                where: { variantId: item.variantId }
+            // Calculate revenue for this specific variant manually since total isn't a field on OrderItem
+            const variantItems = await prisma.orderItem.findMany({
+                where: { variantId: item.variantId },
+                select: { price: true, quantity: true }
             });
+            const variantRevenue = variantItems.reduce((sum, oi) => sum + (oi.price * oi.quantity), 0);
 
             return {
                 id: variant?.productId,
                 variantId: item.variantId,
                 name: `${variant?.product.name} (${variant?.name})`,
                 sales: item._sum.quantity,
-                revenue: variantRevenueRes._sum.total || 0,
+                revenue: variantRevenue,
                 image: variant?.product.images[0]?.imageUrl,
                 price: variant?.price,
                 stock: variant?.stock

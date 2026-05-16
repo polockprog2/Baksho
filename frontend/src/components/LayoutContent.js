@@ -8,6 +8,7 @@ import SearchOverlay from "@/components/SearchOverlay";
 import { useUI } from "@/context/UIContext";
 import { useCart } from "@/context/CartContext";
 import { useUser } from "@/context/UserContext";
+import { usePathname } from 'next/navigation';
 
 /**
  * LayoutContent Component
@@ -17,6 +18,9 @@ export default function LayoutContent({ children }) {
     const { isSearchOpen, closeSearch } = useUI();
     const { closeCart } = useCart();
     const { user } = useUser();
+    const pathname = usePathname();
+
+    const isAdminRoute = pathname?.startsWith('/admin');
 
     // Close cart drawer on logout
     const prevUserRef = React.useRef(user);
@@ -33,7 +37,7 @@ export default function LayoutContent({ children }) {
             <CartDrawer />
             <SearchOverlay isOpen={isSearchOpen} onClose={closeSearch} />
             <main>{children}</main>
-            <Footer />
+            {!isAdminRoute && <Footer />}
         </>
     );
 }

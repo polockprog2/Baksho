@@ -16,7 +16,17 @@ export default function AdminInventoryPage() {
         setIsLoading(true);
         try {
             const response = await getProducts({ limit: 100 });
-            setInventory(response.data);
+            // Map products to include first variant's stock and id
+            const items = response.data.map(p => ({
+                id: p.variants?.[0]?.id || p.id, // Use variant ID for adjustments
+                productId: p.id,
+                name: p.name,
+                category: p.category,
+                unit: p.variants?.[0]?.name || 'unit',
+                stock: p.variants?.[0]?.stock || 0,
+                inStock: (p.variants?.[0]?.stock || 0) > 0
+            }));
+            setInventory(items);
         } catch (error) {
             console.error('Inventory fetch failed');
         } finally {

@@ -114,8 +114,10 @@ export default function AdminOrdersPage() {
                                         <p className="text-[10px] text-slate-400 font-bold uppercase">{order.date || 'Today'}</p>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <p className="text-sm font-black text-slate-900">{order.customerEmail || 'Guest'}</p>
-                                        <p className="text-[10px] text-slate-500 font-bold">Strasse 123, Berlin</p>
+                                        <p className="text-sm font-black text-slate-900">{order.user?.name || order.user?.email || 'Guest'}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold truncate max-w-[200px]">
+                                            {order.address ? `${order.address.street}, ${order.address.city}` : 'No address provided'}
+                                        </p>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-xs font-bold text-slate-600">{order.items.length} products</span>

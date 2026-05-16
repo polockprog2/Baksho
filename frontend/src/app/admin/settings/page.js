@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getGlobalSettings, updateGlobalSettings } from '@/api/settings.api';
+import { toast } from 'react-hot-toast';
 
 /**
  * Enterprise Settings Module
@@ -17,9 +19,29 @@ export default function AdminSettingsPage() {
 
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const data = await getGlobalSettings();
+                // Merge with default values if some keys are missing
+                setSettings(prev => ({ ...prev, ...data }));
+            } catch (error) {
+                console.error('Failed to fetch settings:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleSave = async () => {
         setIsSaving(true);
-        setTimeout(() => setIsSaving(false), 1000);
+        try {
+            await updateGlobalSettings(settings);
+            toast.success('Settings updated successfully!');
+        } catch (error) {
+            toast.error('Failed to update settings');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (

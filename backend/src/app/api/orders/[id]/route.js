@@ -15,7 +15,7 @@ export async function GET(req, { params }) {
             where: { id },
             include: {
                 items: true,
-                deliveryAddress: true,
+                address: true,
                 user: { select: { id: true, email: true, name: true } }
             }
         })
@@ -56,7 +56,7 @@ export async function PATCH(req, { params }) {
             data: { status: status.toUpperCase() },
             include: {
                 items: true,
-                deliveryAddress: true,
+                address: true,
                 user: { select: { id: true, email: true, name: true } }
             }
         })
