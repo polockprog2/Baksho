@@ -3,6 +3,8 @@ import { getProducts, getCategories } from '@/api/product.api';
 import { getHomepageSettings } from '@/api/settings.api';
 import { flattenProduct } from '@/utils/helpers';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Professional & Unique Home Page - Server Component
  * Fetches data on the server to reduce client-side bundle and improve performance.
