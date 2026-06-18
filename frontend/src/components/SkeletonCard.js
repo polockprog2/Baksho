@@ -44,17 +44,6 @@ export default function SkeletonCard() {
                 <div className="h-6 bg-gray-100 rounded-full w-1/3"></div>
                 <div className="w-10 h-10 bg-gray-100 rounded-full"></div>
             </div>
-
-            <style jsx>{`
-                @keyframes shimmer {
-                    0% { background-position: 200% 0; }
-                    100% { background-position: -200% 0; }
-                }
-                .animate-shimmer {
-                    animation: shimmer 2s infinite linear;
-                    background-size: 200% 100%;
-                }
-            `}</style>
         </div>
     );
 }

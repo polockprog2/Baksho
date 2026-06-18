@@ -124,3 +124,22 @@ html {
 .logo-animated:hover span:nth-child(3) {
   transform: translateY(-50%) scaleY(1);
 }
+
+/* Custom global scrollbar utilities to avoid styled-jsx hydration issues */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E5E7EB;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #D1D5DB;
+}

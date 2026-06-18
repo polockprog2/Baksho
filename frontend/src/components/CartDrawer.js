@@ -120,12 +120,12 @@ export default function CartDrawer() {
                             {cartItems.map((item, index) => (
                                 <div key={item.variantId || item.id || index} className="flex gap-4 group">
                                     <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100 p-1 group-hover:scale-105 transition-transform">
-                                        <Image 
-                                            src={item.image || '/placeholder-product.png'} 
-                                            alt={item.name} 
-                                            width={80} 
-                                            height={80} 
-                                            className="w-full h-full object-contain" 
+                                        <Image
+                                            src={item.image || '/placeholder-product.png'}
+                                            alt={item.name}
+                                            width={80}
+                                            height={80}
+                                            className="w-full h-full object-contain"
                                         />
                                     </div>
                                     <div className="flex-1 flex flex-col justify-between">
@@ -216,23 +216,7 @@ export default function CartDrawer() {
                     </div>
                 )}
             </div>
-
-            {/* Custom Styles for Scrollbar */}
-            <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 4px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #E5E7EB;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #D1D5DB;
-                }
-            `}</style>
         </div>
     );
 }
+

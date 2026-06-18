@@ -19,7 +19,7 @@ export default function LayoutContent({ children }) {
     const { closeCart } = useCart();
     const { user } = useUser();
     const pathname = usePathname();
-
+ 
     const isAdminRoute = pathname?.startsWith('/admin');
 
     // Close cart drawer on logout
