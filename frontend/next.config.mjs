@@ -24,7 +24,13 @@ const nextConfig = {
     optimizePackageImports: ['recharts', 'lucide-react', 'framer-motion'],
   },
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    let backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    
+    // Sanitize backendUrl to ensure it starts with http:// or https:// (defaulting to https:// if missing)
+    if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://') && !backendUrl.startsWith('/')) {
+      backendUrl = `https://${backendUrl}`;
+    }
+
     return [
       {
         source: '/api/:path*',
