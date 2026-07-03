@@ -3,6 +3,7 @@ import { updateCategorySchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
 
 export async function GET(req, { params }) {
     try {
@@ -27,7 +28,7 @@ export async function GET(req, { params }) {
             productCount: category._count.products
         })
     } catch (error) {
-        console.error("Category GET error:", error)
+        logger.error("Category GET error", { message: error.message })
         return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 })
     }
 }
@@ -50,7 +51,7 @@ export async function PATCH(req, { params }) {
 
         return NextResponse.json(category)
     } catch (error) {
-        console.error("Category PATCH error:", error)
+        logger.error("Category PATCH error", { message: error.message })
         return NextResponse.json({ error: "Failed to update category" }, { status: 400 })
     }
 }
@@ -81,7 +82,7 @@ export async function DELETE(req, { params }) {
 
         return NextResponse.json({ message: "Category deleted successfully" })
     } catch (error) {
-        console.error("Category DELETE error:", error)
+        logger.error("Category DELETE error", { message: error.message })
         return NextResponse.json({ error: "Failed to delete category" }, { status: 400 })
     }
 }

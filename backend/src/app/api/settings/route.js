@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { withAdminAuth } from "@/lib/withAuth"
+import logger from "@/lib/logger"
 
 // GET /api/settings - Fetch all settings
 export const GET = withAdminAuth(async function GET() {
@@ -15,7 +16,7 @@ export const GET = withAdminAuth(async function GET() {
 
         return NextResponse.json(settingsObj);
     } catch (error) {
-        console.error("Settings GET error:", error);
+        logger.error("Settings GET error", { message: error.message });
         return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
     }
 });
@@ -38,7 +39,7 @@ export const PATCH = withAdminAuth(async function PATCH(req) {
 
         return NextResponse.json({ message: "Settings updated successfully" });
     } catch (error) {
-        console.error("Settings PATCH error:", error);
+        logger.error("Settings PATCH error", { message: error.message });
         return NextResponse.json({ error: "Failed to update settings" }, { status: 400 });
     }
 });

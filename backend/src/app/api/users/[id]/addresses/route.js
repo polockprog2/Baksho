@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
 
 export async function GET(req, { params }) {
     try {
@@ -24,7 +25,7 @@ export async function GET(req, { params }) {
 
         return NextResponse.json(addresses)
     } catch (error) {
-        console.error("Addresses GET error:", error)
+        logger.error("Addresses GET error", { message: error.message })
         return NextResponse.json({ error: "Failed to fetch addresses" }, { status: 500 })
     }
 }
@@ -73,7 +74,7 @@ export async function POST(req, { params }) {
 
         return NextResponse.json(address, { status: 201 })
     } catch (error) {
-        console.error("Address POST error:", error)
+        logger.error("Address POST error", { message: error.message })
         return NextResponse.json({ error: "Failed to create address" }, { status: 400 })
     }
 }

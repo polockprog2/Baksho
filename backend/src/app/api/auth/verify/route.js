@@ -1,6 +1,7 @@
 // backend/src/app/api/auth/verify/route.js
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import logger from "@/lib/logger"
 
 export async function GET(req) {
     const { searchParams } = new URL(req.url)
@@ -35,7 +36,7 @@ export async function GET(req) {
 
         return NextResponse.json({ success: true, message: "Email verified successfully" })
     } catch (error) {
-        console.error("Verification error:", error)
+        logger.error("Verification error", { message: error.message })
         return NextResponse.json({ error: "Verification failed" }, { status: 500 })
     }
 }

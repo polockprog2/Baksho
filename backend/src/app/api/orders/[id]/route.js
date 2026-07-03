@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
 
 export async function GET(req, { params }) {
     try {
@@ -31,7 +32,7 @@ export async function GET(req, { params }) {
 
         return NextResponse.json(order)
     } catch (error) {
-        console.error("Order GET error:", error)
+        logger.error("Order GET error", { message: error.message })
         return NextResponse.json({ error: "Failed to fetch order" }, { status: 500 })
     }
 }
@@ -63,7 +64,7 @@ export async function PATCH(req, { params }) {
 
         return NextResponse.json(order)
     } catch (error) {
-        console.error("Order PATCH error:", error)
+        logger.error("Order PATCH error", { message: error.message })
         return NextResponse.json({ error: "Failed to update order" }, { status: 400 })
     }
 }

@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { withAdminAuth } from "@/lib/withAuth"
+import logger from "@/lib/logger"
 
 // GET /api/users - List all users
 export const GET = withAdminAuth(async function GET(req) {
@@ -54,9 +55,10 @@ export const GET = withAdminAuth(async function GET(req) {
             }
         });
     } catch (error) {
-        console.error("Users GET error:", error);
+        logger.error("Users GET error", { message: error.message });
         return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
     }
 });
+
 
 // PATCH /api/users/[id] - Handled in a separate file if needed, but for simplicity we can use a root PATCH or separate file

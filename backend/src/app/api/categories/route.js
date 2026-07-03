@@ -3,6 +3,7 @@ import { categorySchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
 
 export async function GET() {
     try {
@@ -29,7 +30,7 @@ export async function GET() {
 
         return NextResponse.json(transformedCategories)
     } catch (error) {
-        console.error("Categories GET error:", error)
+        logger.error("Categories GET error", { message: error.message })
         return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 })
     }
 }
@@ -50,7 +51,7 @@ export async function POST(req) {
 
         return NextResponse.json(category, { status: 201 })
     } catch (error) {
-        console.error("Categories POST error:", error)
+        logger.error("Categories POST error", { message: error.message })
         return NextResponse.json({ error: error.message || "Failed to create category" }, { status: 400 })
     }
 }

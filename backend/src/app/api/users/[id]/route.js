@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { withAdminAuth } from "@/lib/withAuth"
+import logger from "@/lib/logger"
 
 export const PATCH = withAdminAuth(async function PATCH(req, { params }) {
     try {
@@ -25,7 +26,7 @@ export const PATCH = withAdminAuth(async function PATCH(req, { params }) {
 
         return NextResponse.json(user);
     } catch (error) {
-        console.error("User PATCH error:", error);
+        logger.error("User PATCH error", { message: error.message });
         return NextResponse.json({ error: "Failed to update user" }, { status: 400 });
     }
 });

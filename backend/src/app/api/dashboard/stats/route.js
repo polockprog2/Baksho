@@ -1,6 +1,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { withAdminAuth } from '@/lib/withAuth';
+import logger from '@/lib/logger';
 
 /**
  * Helper: calculate percentage change between two values
@@ -171,7 +172,7 @@ export const GET = withAdminAuth(async function GET(req) {
             topProducts: topProducts
         });
     } catch (error) {
-        console.error('API Dashboard Stats Error:', error);
+        logger.error('Dashboard Stats error', { message: error.message });
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 });

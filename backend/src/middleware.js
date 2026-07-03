@@ -54,15 +54,14 @@ export function middleware(request) {
         return new NextResponse(null, { status: 200, headers: response.headers })
     }
 
-    // Bypass rate limit in development mode
-    if (process.env.NODE_ENV === 'development') {
-        return response
-    }
+    // In development, apply a relaxed rate limit (5x) so the logic is always tested
+    // but developers don't hit limits during normal work.
+    const devMultiplier = process.env.NODE_ENV === 'development' ? 5 : 1
 
     // Rate limiting
     const key = getRateLimitKey(request)
     const isAuthEndpoint = pathname.startsWith('/api/auth')
-    const maxRequests = isAuthEndpoint ? MAX_REQUESTS_AUTH : MAX_REQUESTS_API
+    const maxRequests = (isAuthEndpoint ? MAX_REQUESTS_AUTH : MAX_REQUESTS_API) * devMultiplier
     const rateLimitKey = `${key}:${isAuthEndpoint ? 'auth' : 'api'}`
 
     const { limited, remaining, resetAt } = isRateLimited(rateLimitKey, maxRequests)

@@ -1,8 +1,8 @@
-// backend/src/app/api/auth/forgot-password/route.js
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { sendPasswordResetEmail } from "@/lib/mail"
 import crypto from "crypto"
+import logger from "@/lib/logger"
 
 export async function POST(req) {
     try {
@@ -37,7 +37,7 @@ export async function POST(req) {
 
         return NextResponse.json({ success: true, message: "If an account exists with that email, a reset link has been sent." })
     } catch (error) {
-        console.error("Forgot password error:", error)
+        logger.error("Forgot password error", { message: error.message })
         return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
     }
 }

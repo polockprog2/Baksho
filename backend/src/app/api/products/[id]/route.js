@@ -3,6 +3,7 @@ import { updateProductSchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import logger from "@/lib/logger"
 
 export async function GET(req, { params }) {
     try {
@@ -22,7 +23,7 @@ export async function GET(req, { params }) {
 
         return NextResponse.json(product)
     } catch (error) {
-        console.error("Product GET error:", error)
+        logger.error("Product GET error", { message: error.message })
         return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 })
     }
 }
@@ -78,7 +79,7 @@ export async function PATCH(req, { params }) {
 
         return NextResponse.json(product)
     } catch (error) {
-        console.error("Product PATCH error:", error)
+        logger.error("Product PATCH error", { message: error.message })
         return NextResponse.json({ error: "Failed to update product" }, { status: 400 })
     }
 }
@@ -108,7 +109,7 @@ export async function DELETE(req, { params }) {
 
         return NextResponse.json({ message: "Product deleted successfully" })
     } catch (error) {
-        console.error("Product DELETE error:", error)
+        logger.error("Product DELETE error", { message: error.message })
         return NextResponse.json({ error: "Failed to delete product" }, { status: 400 })
     }
 }
