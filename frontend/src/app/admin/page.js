@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import { getDashboardStats } from '@/api/dashboard.api';
 import Link from 'next/link';
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell, Legend
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 /**
@@ -33,6 +32,24 @@ export default function AdminDashboard() {
         };
         fetchStats();
     }, []);
+
+    const summary = stats?.summary || {
+        totalOrders: 0,
+        revenue: 0,
+        totalCustomers: 0,
+        lowStockCount: 0,
+        ordersTrend: '0%',
+        revenueTrend: '0%',
+        customersTrend: '0%',
+        stockTrend: '0'
+    };
+
+    const kpis = [
+        { id: 'total-orders', label: 'Total Orders', value: summary.totalOrders.toLocaleString(), trend: summary.ordersTrend, icon: 'shopping-bag' },
+        { id: 'revenue', label: 'Total Revenue', value: `$${Number(summary.revenue || 0).toFixed(2)}`, trend: summary.revenueTrend, icon: 'euro' },
+        { id: 'active-customers', label: 'Active Customers', value: summary.totalCustomers.toLocaleString(), trend: summary.customersTrend, icon: 'users' },
+        { id: 'low-stock', label: 'Low Stock Items', value: summary.lowStockCount, trend: summary.stockTrend, icon: 'alert-triangle' }
+    ];
 
     if (isLoading) {
         return (
@@ -97,7 +114,7 @@ export default function AdminDashboard() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats?.kpis.map((kpi) => (
+                {kpis.map((kpi) => (
                     <div key={kpi.id} className="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.04)] transition-all duration-500 group relative overflow-hidden">
                         {/* Abstract background shape */}
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-slate-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
@@ -268,7 +285,7 @@ export default function AdminDashboard() {
                             <div className="mt-8 p-6 rounded-3xl bg-[#003B4A] text-white overflow-hidden relative group">
                                 <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-2">Inventory Alert</p>
-                                <h4 className="text-sm font-black mb-4">Stock levels are low for {stats?.kpis.find(k => k.id === 'low-stock')?.value || 0} items</h4>
+                                <h4 className="text-sm font-black mb-4">Stock levels are low for {summary.lowStockCount} items</h4>
                                 <Link
                                     href="/admin/products?stock=low"
                                     className="inline-block px-4 py-2 bg-white text-[#003B4A] text-[10px] font-black uppercase tracking-widest rounded-xl hover:opacity-90 transition-opacity relative z-10"

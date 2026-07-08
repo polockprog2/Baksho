@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import useEmblaCarousel from 'embla-carousel-react';
 import HeroBanner from '@/components/HeroBanner';
 import DealsCarousel from '@/components/DealsCarousel';
 import ProductCard from '@/components/ProductCard';
@@ -11,7 +11,6 @@ import BannerSection from '@/components/BannerSection';
 import CategoryProductSection from '@/components/CategoryProductSection';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
-import SkeletonCard from '@/components/SkeletonCard';
 
 // Lazy load non-critical sections
 const TrustSection = dynamic(() => import('@/components/TrustSection'), { ssr: true });
@@ -22,7 +21,11 @@ export default function HomeContent({
 }) {
   const { language } = useLanguage();
   const t = translations[language] || translations.EN;
-  
+
+  // Embla carousel instances for inline product rows
+  const [featuredEmblaRef] = useEmblaCarousel({ align: 'start', dragFree: true, containScroll: 'trimSnaps' });
+  const [newArrivalsEmblaRef] = useEmblaCarousel({ align: 'start', dragFree: true, containScroll: 'trimSnaps' });
+
   const { 
     featuredProducts, 
     newArrivals, 
@@ -189,12 +192,14 @@ export default function HomeContent({
               </div>
             </div>
             <div className="lg:col-span-2">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {featuredProducts.slice(0, 6).map((product, index) => (
-                  <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
-                    <ProductCard product={product} />
-                  </div>
-                ))}
+              <div ref={featuredEmblaRef} className="overflow-hidden cursor-grab active:cursor-grabbing">
+                <div className="flex gap-6 pb-4 pt-2">
+                  {featuredProducts.slice(0, 8).map((product, index) => (
+                    <div key={product.id} className="flex-none w-[220px] animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -216,12 +221,14 @@ export default function HomeContent({
                 {t.view_all || 'View All'}
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {newArrivals.slice(0, 4).map((product, index) => (
-                <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <ProductCard product={product} />
-                </div>
-              ))}
+            <div ref={newArrivalsEmblaRef} className="overflow-hidden cursor-grab active:cursor-grabbing">
+              <div className="flex gap-6 pb-4 pt-2">
+                {newArrivals.slice(0, 8).map((product, index) => (
+                  <div key={product.id} className="flex-none w-[220px] animate-fade-in-up" style={{ animationDelay: `${index * 50}ms` }}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>

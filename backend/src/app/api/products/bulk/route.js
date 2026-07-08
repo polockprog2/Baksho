@@ -4,6 +4,33 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { productSchema } from "@/lib/validations"
 
+function parseCsvLine(line) {
+    const values = []
+    let current = ""
+    let inQuotes = false
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+
+        if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+                current += '"'
+                i++
+            } else {
+                inQuotes = !inQuotes
+            }
+        } else if (char === "," && !inQuotes) {
+            values.push(current.trim())
+            current = ""
+        } else {
+            current += char
+        }
+    }
+
+    values.push(current.trim())
+    return values
+}
+
 export async function POST(req) {
     try {
         const session = await getServerSession(authOptions)
@@ -20,7 +47,7 @@ export async function POST(req) {
 
         const text = await file.text()
         const lines = text.split(/\r?\n/)
-        const header = lines[0].split(",")
+        const header = parseCsvLine(lines[0])
 
         // Expected header: name,slug,description,categorySlug,variantName,price,originalPrice,stock,sku,imageUrls
         const results = {
@@ -39,17 +66,17 @@ export async function POST(req) {
             const line = lines[i].trim()
             if (!line) continue
 
-            // Simple CSV split (doesn't handle quoted commas, but good enough for this task)
-            const values = line.split(",")
-            if (values.length < 6) {
+            const values = parseCsvLine(line)
+            if (values.length < 10) {
                 results.failed++
                 results.errors.push(`Line ${i + 1}: Insufficient columns`)
                 continue
             }
 
             const [name, slug, description, categorySlug, variantName, price, originalPrice, stock, sku, imageUrls] = values
+            const normalizedCategorySlug = categorySlug.trim().toLowerCase()
 
-            const categoryId = categoryMap.get(categorySlug)
+            const categoryId = categoryMap.get(normalizedCategorySlug)
             if (!categoryId) {
                 results.failed++
                 results.errors.push(`Line ${i + 1}: Category slug '${categorySlug}' not found`)

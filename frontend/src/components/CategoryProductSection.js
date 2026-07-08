@@ -1,22 +1,46 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import useEmblaCarousel from 'embla-carousel-react';
 import ProductCard from './ProductCard';
 import SkeletonCard from './SkeletonCard';
 import { getProducts } from '@/api/product.api';
 import { flattenProduct } from '@/utils/helpers';
 
 /**
- * CategoryProductSection Component
- * Displays a horizontal carousel of products for a specific category
+ * CategoryProductSection – powered by Embla Carousel
+ * Horizontal product carousel with mouse drag, touch, and arrow nav.
  */
 export default function CategoryProductSection({ category, title, viewAllLink, limit = 10 }) {
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const scrollRef = useRef(null);
-    const [showLeftArrow, setShowLeftArrow] = useState(false);
-    const [showRightArrow, setShowRightArrow] = useState(true);
+
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        align: 'start',
+        dragFree: true,
+        containScroll: 'trimSnaps',
+    });
+
+    const [canScrollPrev, setCanScrollPrev] = useState(false);
+    const [canScrollNext, setCanScrollNext] = useState(true);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setCanScrollPrev(emblaApi.canScrollPrev());
+        setCanScrollNext(emblaApi.canScrollNext());
+    }, [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        onSelect();
+        emblaApi.on('select', onSelect);
+        emblaApi.on('reInit', onSelect);
+        return () => {
+            emblaApi.off('select', onSelect);
+            emblaApi.off('reInit', onSelect);
+        };
+    }, [emblaApi, onSelect]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -37,27 +61,13 @@ export default function CategoryProductSection({ category, title, viewAllLink, l
         }
     }, [category, limit]);
 
-    const scroll = (direction) => {
-        const container = scrollRef.current;
-        if (container) {
-            const scrollAmount = window.innerWidth < 768 ? 200 : 400;
-            const newScrollLeft = direction === 'left'
-                ? container.scrollLeft - scrollAmount
-                : container.scrollLeft + scrollAmount;
+    // Re-init Embla after products load so it measures correctly
+    useEffect(() => {
+        if (emblaApi) emblaApi.reInit();
+    }, [products, emblaApi]);
 
-            container.scrollTo({
-                left: newScrollLeft,
-                behavior: 'smooth'
-            });
-
-            setTimeout(() => {
-                setShowLeftArrow(container.scrollLeft > 5);
-                setShowRightArrow(
-                    container.scrollLeft < container.scrollWidth - container.clientWidth - 10
-                );
-            }, 300);
-        }
-    };
+    const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
     if (!isLoading && products.length === 0) return null;
 
@@ -90,9 +100,9 @@ export default function CategoryProductSection({ category, title, viewAllLink, l
 
                         <div className="flex gap-3">
                             <button
-                                onClick={() => scroll('left')}
-                                disabled={!showLeftArrow}
-                                className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all bg-white/80 backdrop-blur-sm shadow-sm ${showLeftArrow
+                                onClick={scrollPrev}
+                                disabled={!canScrollPrev}
+                                className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all bg-white/80 backdrop-blur-sm shadow-sm ${canScrollPrev
                                     ? 'hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-xl hover:scale-110 active:scale-90'
                                     : 'opacity-30 cursor-not-allowed'
                                     }`}
@@ -101,9 +111,9 @@ export default function CategoryProductSection({ category, title, viewAllLink, l
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
                             </button>
                             <button
-                                onClick={() => scroll('right')}
-                                disabled={!showRightArrow}
-                                className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all bg-white/80 backdrop-blur-sm shadow-sm ${showRightArrow
+                                onClick={scrollNext}
+                                disabled={!canScrollNext}
+                                className={`w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center transition-all bg-white/80 backdrop-blur-sm shadow-sm ${canScrollNext
                                     ? 'hover:bg-green-600 hover:text-white hover:border-green-600 hover:shadow-xl hover:scale-110 active:scale-90'
                                     : 'opacity-30 cursor-not-allowed'
                                     }`}
@@ -115,29 +125,27 @@ export default function CategoryProductSection({ category, title, viewAllLink, l
                     </div>
                 </div>
 
-                {/* Carousel Container */}
-                <div
-                    ref={scrollRef}
-                    className="flex gap-4 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-8 pt-2 -mx-2 px-2"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {isLoading ? (
-                        [...Array(6)].map((_, i) => (
-                            <div key={i} className="flex-shrink-0 w-[200px] md:w-72">
-                                <SkeletonCard />
-                            </div>
-                        ))
-                    ) : (
-                        products.map((product, index) => (
-                            <div
-                                key={product.id}
-                                className="flex-shrink-0 w-[200px] md:w-72 animate-fade-in-up"
-                                style={{ animationDelay: `${index * 50}ms` }}
-                            >
-                                <ProductCard product={product} />
-                            </div>
-                        ))
-                    )}
+                {/* Embla Carousel */}
+                <div ref={emblaRef} className="overflow-hidden cursor-grab active:cursor-grabbing -mx-2 px-2">
+                    <div className="flex gap-4 md:gap-8 pb-8 pt-2">
+                        {isLoading ? (
+                            [...Array(6)].map((_, i) => (
+                                <div key={i} className="flex-none w-[200px] md:w-72">
+                                    <SkeletonCard />
+                                </div>
+                            ))
+                        ) : (
+                            products.map((product, index) => (
+                                <div
+                                    key={product.id}
+                                    className="flex-none w-[200px] md:w-72 animate-fade-in-up"
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                >
+                                    <ProductCard product={product} />
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile View All */}

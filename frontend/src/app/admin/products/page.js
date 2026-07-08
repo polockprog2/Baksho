@@ -431,7 +431,8 @@ export default function AdminProductsPage() {
                                         <h3 className="text-xs font-black text-blue-700 uppercase tracking-wider mb-2">CSV Format Requirements</h3>
                                         <p className="text-[11px] text-blue-600 font-medium leading-relaxed">
                                             The CSV should have the following headers:<br />
-                                            <code className="bg-blue-100 px-1 rounded">name,slug,description,categorySlug,variantName,price,originalPrice,stock,sku,imageUrls</code>
+                                            <code className="bg-blue-100 px-0 rounded">name,slug,description,categorySlug,variantName,price,originalPrice</code><br></br>
+                                            <code className="bg-blue-100 px-0 rounded">stock,sku,imageUrls</code>
                                         </p>
                                     </div>
                                     <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 hover:border-[#003B4A] transition-colors bg-slate-50/50">
