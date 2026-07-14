@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { forgotPasswordApi } from '@/api/user.api';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
@@ -14,23 +15,12 @@ export default function ForgotPasswordPage() {
         setStatus('loading');
 
         try {
-            const response = await fetch('http://localhost:3001/api/auth/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                setStatus('success');
-                setMessage(data.message);
-            } else {
-                setStatus('error');
-                setMessage(data.error || 'Something went wrong.');
-            }
+            const data = await forgotPasswordApi(email);
+            setStatus('success');
+            setMessage(data.message);
         } catch (error) {
             setStatus('error');
-            setMessage('Failed to send reset link.');
+            setMessage(error.message || 'Failed to send reset link.');
         }
     };
 

@@ -1,41 +1,43 @@
 // backend/src/app/api/auth/reset-password/route.js
-import prisma from "@/lib/prisma"
-import { NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import logger from "@/lib/logger"
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import logger from "@/lib/logger";
 
 export async function POST(req) {
     try {
-        const { token, password } = await req.json()
+        const { token, password } = await req.json();
 
         if (!token || !password) {
-            return NextResponse.json({ error: "Token and password are required" }, { status: 400 })
+            return NextResponse.json({ error: "Token and password are required" }, { status: 400 });
+        }
+
+        if (String(password).length < 6) {
+            return NextResponse.json({ error: "Password must be at least 6 characters long" }, { status: 400 });
         }
 
         const verificationToken = await prisma.verificationToken.findUnique({
             where: { token }
-        })
+        });
 
         if (!verificationToken || new Date() > verificationToken.expires) {
-            return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 })
+            return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Update user password
         await prisma.user.update({
             where: { email: verificationToken.identifier },
             data: { password: hashedPassword }
-        })
+        });
 
-        // Delete the token
-        await prisma.verificationToken.delete({
-            where: { token }
-        })
+        await prisma.verificationToken.deleteMany({
+            where: { identifier: verificationToken.identifier }
+        });
 
-        return NextResponse.json({ success: true, message: "Password reset successfully" })
+        return NextResponse.json({ success: true, message: "Password reset successfully" });
     } catch (error) {
-        logger.error("Reset password error", { message: error.message })
-        return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
+        logger.error("Reset password error", { message: error.message });
+        return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
     }
 }

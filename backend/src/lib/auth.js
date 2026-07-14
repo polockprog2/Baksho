@@ -17,21 +17,18 @@ export const authOptions = {
                     throw new Error("Invalid credentials");
                 }
 
+                const email = String(credentials.email).trim().toLowerCase();
                 const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email
-                    }
+                    where: { email }
                 });
 
                 if (!user || !user.password) {
-                    throw new Error("User not found");
+                    throw new Error("Invalid credentials");
                 }
 
-                // Note: We could add a check for user.emailVerified here
-                // if we wanted to block unverified users from logging in.
-                // if (!user.emailVerified) {
-                //     throw new Error("Please verify your email to log in");
-                // }
+                if (!user.emailVerified) {
+                    throw new Error("Please verify your email before logging in.");
+                }
 
                 const isPasswordCorrect = await bcrypt.compare(
                     credentials.password,
@@ -39,7 +36,7 @@ export const authOptions = {
                 );
 
                 if (!isPasswordCorrect) {
-                    throw new Error("Invalid password");
+                    throw new Error("Invalid credentials");
                 }
 
                 return user;
@@ -51,6 +48,7 @@ export const authOptions = {
             if (token) {
                 session.user.id = token.id;
                 session.user.role = token.role;
+                session.user.emailVerified = token.emailVerified ?? false;
             }
             return session;
         },
@@ -58,15 +56,16 @@ export const authOptions = {
             if (user) {
                 token.id = user.id;
                 token.role = user.role;
+                token.emailVerified = user.emailVerified ?? false;
             }
             return token;
         }
     },
     pages: {
-        signIn: "/login",
+        signIn: "/login"
     },
     session: {
-        strategy: "jwt",
+        strategy: "jwt"
     },
-    secret: process.env.NEXTAUTH_SECRET,
-}
+    secret: process.env.NEXTAUTH_SECRET
+};

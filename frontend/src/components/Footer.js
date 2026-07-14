@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
+import { subscribeNewsletter } from '@/api/user.api';
 
 /**
  * Footer Component - Jamoona Style
@@ -14,12 +15,23 @@ export default function Footer() {
     const { language, changeLanguage } = useLanguage();
     const t = translations[language] || translations.EN;
     const [email, setEmail] = useState('');
+    const [newsletterStatus, setNewsletterStatus] = useState('idle');
+    const [newsletterMessage, setNewsletterMessage] = useState('');
 
-    const handleNewsletterSubmit = (e) => {
+    const handleNewsletterSubmit = async (e) => {
         e.preventDefault();
-        // In production, this would call an API
-        alert(t.newsletter_success || 'Thank you for subscribing!');
-        setEmail('');
+        setNewsletterStatus('loading');
+        setNewsletterMessage('');
+
+        try {
+            const data = await subscribeNewsletter(email.trim());
+            setNewsletterStatus('success');
+            setNewsletterMessage(data.message || t.newsletter_success || 'Thank you for subscribing!');
+            setEmail('');
+        } catch (error) {
+            setNewsletterStatus('error');
+            setNewsletterMessage(error.message || 'Subscription failed. Please try again.');
+        }
     };
 
     return (
@@ -96,10 +108,19 @@ export default function Footer() {
                                     required
                                     className="flex-1 px-3 py-2 rounded-lg bg-gray-800 text-white border border-gray-700 text-sm focus:border-green-500 focus:outline-none"
                                 />
-                                <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                                    →
+                                <button
+                                    type="submit"
+                                    disabled={newsletterStatus === 'loading'}
+                                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-60"
+                                >
+                                    {newsletterStatus === 'loading' ? '...' : '→'}
                                 </button>
                             </div>
+                            {newsletterMessage && (
+                                <p className={`mt-2 text-xs font-medium ${newsletterStatus === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                                    {newsletterMessage}
+                                </p>
+                            )}
                         </form>
 
                         {/* Language Selector */}

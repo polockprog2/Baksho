@@ -18,6 +18,38 @@ export const registerUserApi = async (userData) => {
     });
 };
 
+export const verifyEmailApi = async (token) => {
+    return await apiClient(`auth/verify?token=${encodeURIComponent(token)}`);
+};
+
+export const resendVerificationApi = async (email) => {
+    return await apiClient('auth/resend-verification', {
+        method: 'POST',
+        body: { email }
+    });
+};
+
+export const forgotPasswordApi = async (email) => {
+    return await apiClient('auth/forgot-password', {
+        method: 'POST',
+        body: { email }
+    });
+};
+
+export const resetPasswordApi = async (token, password) => {
+    return await apiClient('auth/reset-password', {
+        method: 'POST',
+        body: { token, password }
+    });
+};
+
+export const subscribeNewsletter = async (email) => {
+    return await apiClient('subscribe', {
+        method: 'POST',
+        body: { email }
+    });
+};
+
 export const getUserProfile = async (id) => {
     return await apiClient(`users/${id}`);
 };

@@ -2,16 +2,18 @@ import prisma from "@/lib/prisma"
 import { registerSchema } from "@/lib/validations"
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import logger from "@/lib/logger"
 
 export async function POST(req) {
     try {
         const body = await req.json()
         const validated = registerSchema.parse(body)
+        const normalizedEmail = validated.email.trim().toLowerCase()
 
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({
-            where: { email: validated.email }
+            where: { email: normalizedEmail }
         })
 
         if (existingUser) {
@@ -24,7 +26,7 @@ export async function POST(req) {
         // Create user
         const user = await prisma.user.create({
             data: {
-                email: validated.email,
+                email: normalizedEmail,
                 name: validated.name,
                 password: hashedPassword,
                 phone: validated.phone,
@@ -32,18 +34,23 @@ export async function POST(req) {
             }
         })
 
+        const token = crypto.randomBytes(32).toString("hex")
+
         // Generate verification token
         const verificationToken = await prisma.verificationToken.create({
             data: {
-                identifier: validated.email,
-                token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+                identifier: normalizedEmail,
+                token,
                 expires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
             }
         })
 
         // Send verification email
         const { sendVerificationEmail } = await import("@/lib/mail")
-        await sendVerificationEmail(validated.email, verificationToken.token)
+        const sent = await sendVerificationEmail(normalizedEmail, verificationToken.token)
+        if (!sent) {
+            logger.warn("Verification email skipped or failed", { email: normalizedEmail })
+        }
 
         // Return user without password
         const userWithoutPassword = { ...user }

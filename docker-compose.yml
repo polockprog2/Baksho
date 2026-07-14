@@ -34,6 +34,9 @@ services:
       DIRECT_URL: postgresql://${POSTGRES_USER:-baksho}:${POSTGRES_PASSWORD:-baksho_secret}@db:5432/${POSTGRES_DB:-baksho_ecommerce}?schema=public
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-onboarding@resend.dev}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     depends_on:
       db:
         condition: service_healthy

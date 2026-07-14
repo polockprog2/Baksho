@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { getProducts } from '@/api/product.api';
+import { subscribeNewsletter } from '@/api/user.api';
 import { flattenProduct } from '@/utils/helpers';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
@@ -22,6 +23,25 @@ export default function WeeklyDealsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+    const [newsletterEmail, setNewsletterEmail] = useState('');
+    const [newsletterStatus, setNewsletterStatus] = useState('idle');
+    const [newsletterMessage, setNewsletterMessage] = useState('');
+
+    const handleNewsletterSubmit = async (e) => {
+        e.preventDefault();
+        setNewsletterStatus('loading');
+        setNewsletterMessage('');
+
+        try {
+            const data = await subscribeNewsletter(newsletterEmail.trim());
+            setNewsletterStatus('success');
+            setNewsletterMessage(data.message || t.newsletter_success || 'Thank you for subscribing!');
+            setNewsletterEmail('');
+        } catch (error) {
+            setNewsletterStatus('error');
+            setNewsletterMessage(error.message || 'Subscription failed. Please try again.');
+        }
+    };
 
     // Simulated countdown to next Monday
     useEffect(() => {
@@ -203,16 +223,28 @@ export default function WeeklyDealsPage() {
                     <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
                         Be the first to receive the Monday Morning Flash bulletin. Limited items often sell out within the first hour.
                     </p>
-                    <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+                    <form onSubmit={handleNewsletterSubmit} className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
                         <input
                             type="email"
+                            required
+                            value={newsletterEmail}
+                            onChange={(e) => setNewsletterEmail(e.target.value)}
                             placeholder={t.email_placeholder || "your@email.com"}
                             className="flex-1 px-8 py-5 rounded-2xl bg-white/5 border border-white/10 text-white font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-red-500 transition-all placeholder:text-gray-600"
                         />
-                        <button className="px-10 py-5 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-red-700 transition-all shadow-2xl active:scale-95">
-                            {t.subscribe_flash || "Get Priority Access"}
+                        <button
+                            type="submit"
+                            disabled={newsletterStatus === 'loading'}
+                            className="px-10 py-5 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-red-700 transition-all shadow-2xl active:scale-95 disabled:opacity-60"
+                        >
+                            {newsletterStatus === 'loading' ? '...' : (t.subscribe_flash || "Get Priority Access")}
                         </button>
-                    </div>
+                    </form>
+                    {newsletterMessage && (
+                        <p className={`mt-6 text-sm font-bold ${newsletterStatus === 'error' ? 'text-red-400' : 'text-green-400'}`}>
+                            {newsletterMessage}
+                        </p>
+                    )}
                     <p className="mt-8 text-xs font-bold text-gray-600 uppercase tracking-widest">
                         🛡️ {t.unsubscribe_anytime || "NO SPAM. UNSUBSCRIBE ANYTIME."}
                     </p>

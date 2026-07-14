@@ -74,7 +74,7 @@ export default function GroceryHeroCharacter() {
         
         .gc-sweat { animation: sweatDrop 0.8s ease-out infinite; }
         
-        .gc-apple, .gc-carrot, .gc-broc, .gc-lemon { animation: floatSprint 0.9s ease-in-out infinite alternate; }
+        .gc-apple, .gc-carrot, .gc-broc, .gc-lemon { animation: floatSprint 0.5s ease-in-out infinite alternate; }
         .gc-star1, .gc-star2, .gc-star3 { animation: floatSprint 1.2s ease-in-out infinite alternate; }
       `}</style>
 

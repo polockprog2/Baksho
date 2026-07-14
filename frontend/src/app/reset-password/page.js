@@ -4,6 +4,7 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { resetPasswordApi } from '@/api/user.api';
 
 function ResetPasswordContent() {
     const searchParams = useSearchParams();
@@ -33,22 +34,11 @@ function ResetPasswordContent() {
         setStatus('loading');
 
         try {
-            const response = await fetch('http://localhost:3001/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token, password })
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                setStatus('success');
-            } else {
-                setStatus('error');
-                setMessage(data.error || 'Failed to reset password.');
-            }
+            await resetPasswordApi(token, password);
+            setStatus('success');
         } catch (error) {
             setStatus('error');
-            setMessage('An error occurred.');
+            setMessage(error.message || 'Failed to reset password.');
         }
     };
 

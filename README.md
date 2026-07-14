@@ -52,6 +52,18 @@ npm run dev
 - Backend API: http://localhost:3001/api
 - Prisma Studio: `npx prisma studio`
 
+### Email Configuration (Resend)
+
+Add these to `backend/.env` for transactional email (verification, password reset, newsletter):
+
+```env
+RESEND_API_KEY=re_xxxxxxxx          # From https://resend.com/api-keys
+EMAIL_FROM=onboarding@resend.dev    # Use a verified domain sender in production
+FRONTEND_URL=http://localhost:3000  # Base URL for links in emails
+```
+
+Without `RESEND_API_KEY`, registration and password reset still work — verification/reset links are logged to the backend console instead of being emailed.
+
 ---
 
 ## 👤 Demo Credentials
@@ -74,7 +86,10 @@ Password: admin123
 
 ### ✅ Authentication
 - User registration with validation
+- Email verification (Resend)
+- Resend verification for expired links
 - User login with password verification
+- Password reset via email
 - Password hashing with bcryptjs
 - Role-based access control (ADMIN/CUSTOMER)
 
@@ -183,9 +198,13 @@ ecommerce-site01/
 
 ## 🔌 API Endpoints
 
-### Authentication (2)
+### Authentication (6)
 - `POST /api/auth/login`
 - `POST /api/auth/register`
+- `GET /api/auth/verify`
+- `POST /api/auth/resend-verification`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
 
 ### Products (5)
 - `GET /api/products`
@@ -289,8 +308,8 @@ curl http://localhost:3001/api/categories
 - [ ] Setup logging and monitoring
 - [ ] Configure backups
 - [ ] Setup rate limiting
-- [ ] Add email verification
-- [ ] Implement password reset
+- [x] Add email verification
+- [x] Implement password reset
 
 ### Deployment Options
 - Vercel (recommended for Next.js)
@@ -330,7 +349,7 @@ curl http://localhost:3001/api/categories
 ## 📝 Key Files
 
 ### Backend Configuration
-- `.env` - Environment variables
+- `.env` - Environment variables (`DATABASE_URL`, `NEXTAUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `FRONTEND_URL`)
 - `prisma/schema.prisma` - Database schema
 - `src/lib/auth.js` - Authentication setup
 - `src/lib/validations.js` - Input validation schemas

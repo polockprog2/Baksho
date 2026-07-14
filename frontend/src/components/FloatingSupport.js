@@ -1,49 +1,362 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { io } from 'socket.io-client';
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import {
+  MainContainer,
+  ChatContainer,
+  MessageList,
+  Message,
+  MessageInput,
+  TypingIndicator,
+  ConversationHeader,
+  Avatar
+} from '@chatscope/chat-ui-kit-react';
+import { useUser } from '@/context/UserContext';
 
 /**
- * FloatingSupport Component
- * Bottom-right fixed support widget
+ * FloatingSupport — bottom-right live chat widget.
+ * Socket is created lazily (only when widget is first opened).
  */
+
+const MAX_MSG_LENGTH = 2000;
+
+const createGreetingMessage = () => ({
+  id: 'welcome-message',
+  message: 'Hello! How can we help you today? 👋',
+  sentTime: new Date().toISOString(),
+  sender: 'support',
+  direction: 'incoming',
+  position: 'single'
+});
+
+const normalizeMessage = (msg) => {
+  if (!msg) return null;
+  const text = typeof msg.text === 'string' ? msg.text : msg.message || '';
+  if (!text) return null;
+  return {
+    id: msg.id || `${msg.timestamp || Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    message: text,
+    sentTime: msg.timestamp || msg.sentTime || new Date().toISOString(),
+    sender: msg.sender || 'support',
+    direction: msg.direction || (msg.sender === 'user' ? 'outgoing' : 'incoming'),
+    position: 'single'
+  };
+};
+
+const getSupportSocketUrl = () => {
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SUPPORT_SOCKET_URL) {
+    return process.env.NEXT_PUBLIC_SUPPORT_SOCKET_URL;
+  }
+  if (typeof window !== 'undefined') {
+    return `http://${window.location.hostname}:3001`;
+  }
+  return 'http://localhost:3001';
+};
+
+const getSendText = (value) => {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    if (typeof value.text === 'string') return value.text;
+    if (typeof value.message === 'string') return value.message;
+    if (typeof value.content === 'string') return value.content;
+  }
+  return '';
+};
+
+/** Get or create a persistent session ID using crypto.randomUUID */
+const getOrCreateSessionId = () => {
+  if (typeof window === 'undefined') return null;
+  const existing = window.localStorage.getItem('support-session-id');
+  if (existing) return existing;
+  const id = `support_${crypto.randomUUID()}`;
+  window.localStorage.setItem('support-session-id', id);
+  return id;
+};
+
 export default function FloatingSupport() {
-    const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('idle'); // idle | connecting | connected | disconnected
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isClosed, setIsClosed] = useState(false); // session closed by admin
 
-    return (
-        <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
-            {/* Expanded Menu */}
-            <div className={`flex flex-col gap-3 transition-all duration-500 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-                }`}>
-                <button className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-xl border border-gray-100 hover:bg-green-50 transition-all hover:-translate-x-2 group">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-green-600">Whatsapp</span>
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                    </div>
-                </button>
-                <button className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-xl border border-gray-100 hover:bg-blue-50 transition-all hover:-translate-x-2 group">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-blue-600">Email Us</span>
-                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    </div>
-                </button>
-            </div>
+  const socketRef = useRef(null);
+  const sessionIdRef = useRef(null);
+  const hasConnectedRef = useRef(false); // track first-open
+  const typingTimeoutRef = useRef(null);
 
-            {/* Main Toggle Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`w-16 h-16 rounded-3xl shadow-2xl flex items-center justify-center transition-all duration-500 overflow-hidden group ${isOpen ? 'bg-gray-900 rotate-90' : 'bg-green-600 hover:rotate-6 active:scale-90'
-                    }`}
-                aria-label="Support menu"
+  // ── Open handler — create socket on first open ───────────────────────────
+  const connectSocket = useCallback(() => {
+    if (socketRef.current) return; // already exists
+
+    sessionIdRef.current = getOrCreateSessionId();
+    setConnectionStatus('connecting');
+
+    const socket = io(getSupportSocketUrl(), {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 8,
+      reconnectionDelay: 1500,
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setConnectionStatus('connected');
+      socket.emit('register_user', {
+        sessionId: sessionIdRef.current,
+        userId: user?.id || null,
+      });
+    });
+
+    socket.on('connect_error', () => setConnectionStatus('disconnected'));
+    socket.on('disconnect', () => setConnectionStatus('disconnected'));
+
+    socket.on('session_history', (history = []) => {
+      const parsed = (history || []).map(normalizeMessage).filter(Boolean);
+      setMessages(parsed.length > 0 ? parsed : [createGreetingMessage()]);
+    });
+
+    socket.on('receive_message', (msg) => {
+      if (msg?.sender === 'admin') {
+        setIsTyping(false);
+        clearTimeout(typingTimeoutRef.current);
+      }
+      const formatted = normalizeMessage(msg);
+      if (!formatted) return;
+
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === formatted.id)) return prev;
+        return [...prev, formatted];
+      });
+
+      // Badge — increment only when widget is closed and message is from admin/support
+      if (msg?.sender !== 'user') {
+        setUnreadCount((c) => c + 1);
+      }
+    });
+
+    socket.on('session_closed', () => {
+      setIsClosed(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `closed-${Date.now()}`,
+          message: 'This support session has been closed. Thank you for contacting us!',
+          sentTime: new Date().toISOString(),
+          sender: 'support',
+          direction: 'incoming',
+          position: 'single',
+        },
+      ]);
+    });
+
+    socket.on('rate_limited', (msg) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `rl-${Date.now()}`,
+          message: `⚠ ${msg}`,
+          sentTime: new Date().toISOString(),
+          sender: 'support',
+          direction: 'incoming',
+          position: 'single',
+        },
+      ]);
+    });
+  }, [user?.id]);
+
+  // ── Cleanup on unmount ───────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      socketRef.current?.disconnect();
+      clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
+  // ── Open widget ──────────────────────────────────────────────────────────
+  const handleOpen = () => {
+    setIsOpen(true);
+    setUnreadCount(0);
+    if (!hasConnectedRef.current) {
+      hasConnectedRef.current = true;
+      connectSocket();
+    }
+  };
+
+  // ── Reconnect manually ───────────────────────────────────────────────────
+  const handleReconnect = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    hasConnectedRef.current = false;
+    connectSocket();
+    hasConnectedRef.current = true;
+  };
+
+  // ── Send message ─────────────────────────────────────────────────────────
+  const handleSend = (messageText) => {
+    const text = getSendText(messageText).trim();
+    if (!text || text.length > MAX_MSG_LENGTH) return;
+    if (connectionStatus !== 'connected' || !socketRef.current) return;
+    if (isClosed) return;
+
+    const optimistic = normalizeMessage({
+      id: `opt-${Date.now()}`,
+      text,
+      sender: 'user',
+      timestamp: new Date().toISOString(),
+      direction: 'outgoing',
+    });
+
+    setMessages((prev) => [...prev, optimistic]);
+    socketRef.current.emit('user_send_message', {
+      sessionId: sessionIdRef.current,
+      text,
+    });
+
+    // Show typing indicator, auto-clear after 15 s
+    setIsTyping(true);
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 15000);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────
+  return (
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+      {/* Chat window */}
+      <div
+        className={`transition-all duration-500 origin-bottom-right ${
+          isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+        }`}
+        style={{
+          width: '360px',
+          height: '480px',
+          borderRadius: '24px',
+          overflow: 'hidden',
+          boxShadow: '0 20px 50px -10px rgba(0,0,0,0.25)',
+        }}
+      >
+        <MainContainer>
+          <ChatContainer>
+            <ConversationHeader>
+              <Avatar
+                src="https://ui-avatars.com/api/?name=Support&background=003B4A&color=fff"
+                name="Support"
+              />
+              <ConversationHeader.Content
+                userName="Customer Support"
+                info={
+                  connectionStatus === 'connected'
+                    ? isClosed ? 'Session closed' : 'Active now'
+                    : connectionStatus === 'connecting'
+                    ? 'Connecting...'
+                    : 'Offline'
+                }
+              />
+              <ConversationHeader.Actions>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full text-gray-500"
+                  aria-label="Close chat"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </ConversationHeader.Actions>
+            </ConversationHeader>
+
+            {/* Connection status banner */}
+            {connectionStatus === 'disconnected' && (
+              <div
+                style={{ padding: '8px 12px', background: '#fffbeb', borderBottom: '1px solid #fde68a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#b45309' }}>
+                  Support is currently unavailable.
+                </span>
+                <button
+                  onClick={handleReconnect}
+                  style={{ fontSize: '11px', fontWeight: 700, color: '#003B4A', background: 'none', border: '1px solid #003B4A', borderRadius: '9999px', padding: '2px 10px', cursor: 'pointer' }}
+                >
+                  Reconnect
+                </button>
+              </div>
+            )}
+
+            {connectionStatus === 'connecting' && (
+              <div style={{ padding: '8px 12px', background: '#eff6ff', borderBottom: '1px solid #bfdbfe', fontSize: '12px', fontWeight: 600, color: '#1d4ed8' }}>
+                Connecting to support...
+              </div>
+            )}
+
+            <MessageList
+              typingIndicator={isTyping ? <TypingIndicator content="Support is typing..." /> : null}
             >
-                {isOpen ? (
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                ) : (
-                    <div className="relative w-8 h-8 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-white absolute transition-opacity duration-300 group-hover:opacity-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                        <svg className="w-8 h-8 text-white absolute opacity-0 transition-opacity duration-300 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    </div>
-                )}
-            </button>
-        </div>
-    );
+              {messages.map((msg, i) => (
+                <Message key={msg.id || i} model={msg}>
+                  {msg.direction === 'incoming' && (
+                    <Avatar
+                      src="https://ui-avatars.com/api/?name=Support&background=003B4A&color=fff"
+                      name="Support"
+                    />
+                  )}
+                </Message>
+              ))}
+            </MessageList>
+
+            <MessageInput
+              placeholder={
+                isClosed
+                  ? 'Session closed'
+                  : connectionStatus === 'connected'
+                  ? 'Type message here...'
+                  : 'Reconnecting...'
+              }
+              onSend={(html, textContent, innerText) =>
+                handleSend(innerText || textContent || html)
+              }
+              attachButton={false}
+              sendButton={true}
+              disabled={connectionStatus !== 'connected' || isClosed}
+            />
+          </ChatContainer>
+        </MainContainer>
+      </div>
+
+      {/* FAB */}
+      <button
+        onClick={isOpen ? () => setIsOpen(false) : handleOpen}
+        className={`w-16 h-16 rounded-3xl shadow-2xl flex items-center justify-center transition-all duration-300 overflow-hidden relative ${
+          isOpen
+            ? 'bg-gray-800 rotate-90 scale-95'
+            : 'bg-green-600 hover:scale-110 active:scale-90'
+        }`}
+        aria-label="Support chat"
+      >
+        {isOpen ? (
+          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+        )}
+
+        {/* Unread badge */}
+        {!isOpen && unreadCount > 0 && (
+          <span
+            className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-2 ring-white animate-bounce"
+            aria-label={`${unreadCount} unread messages`}
+          >
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+    </div>
+  );
 }

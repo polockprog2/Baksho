@@ -1,8 +1,10 @@
 import prisma from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { sendPasswordResetEmail } from "@/lib/mail"
+import { sendVerificationEmail } from "@/lib/mail"
 import crypto from "crypto"
 import logger from "@/lib/logger"
+
+const GENERIC_MESSAGE = "If an account exists and is unverified, a new verification email was sent."
 
 export async function POST(req) {
     try {
@@ -17,15 +19,15 @@ export async function POST(req) {
             where: { email: normalizedEmail }
         })
 
-        if (!user) {
+        if (!user || user.emailVerified) {
             return NextResponse.json({
                 success: true,
-                message: "If an account exists with that email, a reset link has been sent."
+                message: GENERIC_MESSAGE
             })
         }
 
         const token = crypto.randomBytes(32).toString("hex")
-        const expires = new Date(Date.now() + 3600000) // 1 hour
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
         await prisma.verificationToken.deleteMany({
             where: { identifier: normalizedEmail }
@@ -39,17 +41,17 @@ export async function POST(req) {
             }
         })
 
-        const sent = await sendPasswordResetEmail(normalizedEmail, token)
+        const sent = await sendVerificationEmail(normalizedEmail, token)
         if (!sent) {
-            logger.warn("Password reset email skipped or failed", { email: normalizedEmail })
+            logger.warn("Resend verification email skipped or failed", { email: normalizedEmail })
         }
 
         return NextResponse.json({
             success: true,
-            message: "If an account exists with that email, a reset link has been sent."
+            message: GENERIC_MESSAGE
         })
     } catch (error) {
-        logger.error("Forgot password error", { message: error.message })
+        logger.error("Resend verification error", { message: error.message })
         return NextResponse.json({ error: "Something went wrong" }, { status: 500 })
     }
 }
