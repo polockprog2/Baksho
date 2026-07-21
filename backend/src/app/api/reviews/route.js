@@ -12,25 +12,23 @@ export async function GET(req) {
         const page = parseInt(searchParams.get("page") || "1")
         const limit = parseInt(searchParams.get("limit") || "10")
 
-        if (!productId) {
-            return NextResponse.json({ error: "productId is required" }, { status: 400 })
-        }
-
+        const where = productId ? { productId } : {}
         const skip = (page - 1) * limit
 
         const [reviews, total, avgRating] = await Promise.all([
             prisma.review.findMany({
-                where: { productId },
+                where,
                 include: {
-                    user: { select: { id: true, name: true, image: true } }
+                    user: { select: { id: true, name: true, image: true } },
+                    product: { select: { id: true, name: true, images: true } }
                 },
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit
             }),
-            prisma.review.count({ where: { productId } }),
+            prisma.review.count({ where }),
             prisma.review.aggregate({
-                where: { productId },
+                where,
                 _avg: { rating: true }
             })
         ])

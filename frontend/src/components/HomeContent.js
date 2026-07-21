@@ -9,6 +9,7 @@ import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
 import BannerSection from '@/components/BannerSection';
 import CategoryProductSection from '@/components/CategoryProductSection';
+import RecentReviewsSection from '@/components/RecentReviewsSection';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/data/translations';
 
@@ -233,6 +234,9 @@ export default function HomeContent({
           </div>
         </section>
       )}
+
+      {/* 8.8 RECENT REVIEWS */}
+      <RecentReviewsSection reviews={initialData.recentReviews} />
 
       {/* 9. TRUST SECTION - Lazy Loaded */}
       <div className="relative z-10">

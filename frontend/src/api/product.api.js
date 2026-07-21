@@ -95,6 +95,10 @@ export const getProductReviews = async (productId, page = 1, limit = 5) => {
     return await apiClient(`reviews?productId=${productId}&page=${page}&limit=${limit}`);
 };
 
+export const getGlobalReviews = async (page = 1, limit = 8) => {
+    return await apiClient(`reviews?page=${page}&limit=${limit}`);
+};
+
 export const createReview = async (reviewData) => {
     return await apiClient('reviews', {
         method: 'POST',

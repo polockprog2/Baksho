@@ -1,32 +1,29 @@
 import HomeContent from '@/components/HomeContent';
-import { getProducts, getCategories } from '@/api/product.api';
+import { getProducts, getCategories, getGlobalReviews } from '@/api/product.api';
 import { getHomepageSettings } from '@/api/settings.api';
 import { flattenProduct } from '@/utils/helpers';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Professional & Unique Home Page - Server Component
- * Fetches data on the server to reduce client-side bundle and improve performance.
- */
 export default async function Home() {
-  // Fetch data on the server
   let initialData = {
     featuredProducts: [],
     newArrivals: [],
     weeklyDeals: [],
     valueDeals: [],
     categories: [],
-    homepageSettings: {}
+    homepageSettings: {},
+    recentReviews: []
   };
 
   try {
-    const [featuredRes, newArrivalsRes, dealsRes, categoriesRes, settingsRes] = await Promise.all([
+    const [featuredRes, newArrivalsRes, dealsRes, categoriesRes, settingsRes, reviewsRes] = await Promise.all([
       getProducts({ featured: true, limit: 8 }),
       getProducts({ sort: 'newest', limit: 8 }),
       getProducts({ discount: 'true', limit: 20 }),
       getCategories(),
-      getHomepageSettings()
+      getHomepageSettings(),
+      getGlobalReviews(1, 8)
     ]);
 
     const featured = (featuredRes.data || featuredRes).map(flattenProduct);
@@ -39,7 +36,8 @@ export default async function Home() {
       weeklyDeals: allDeals.filter(p => (p.discount || 0) >= 15).slice(0, 10),
       valueDeals: allDeals.slice(0, 10),
       categories: categoriesRes.data || categoriesRes,
-      homepageSettings: settingsRes || {}
+      homepageSettings: settingsRes || {},
+      recentReviews: reviewsRes.data || reviewsRes || []
     };
   } catch (error) {
     console.error('Failed to fetch homepage data on server:', error);
